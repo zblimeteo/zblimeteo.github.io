@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import Script from 'next/script';
 import { doiIdentifier, PublicationCitation, type Publication } from '../publication-citation';
 import publications from './publications.json';
+
+export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'Publications · Zhi-Bo Li',
@@ -22,8 +23,8 @@ export default function PublicationsPage() {
   return (
     <main className="publications-page">
       <header className="site-header publications-header">
-        <Link className="wordmark" href="/" aria-label="Zhi-Bo Li, home">ZB<span>·</span>L</Link>
-        <nav aria-label="Main navigation"><Link href="/">Home</Link><Link href="/publications" aria-current="page">Publications</Link><Link href="/presentations">Presentations</Link></nav>
+        <a className="wordmark" href="/" aria-label="Zhi-Bo Li, home">ZB<span>·</span>L</a>
+        <nav aria-label="Main navigation"><a href="/">Home</a><a href="/publications.html" aria-current="page">Publications</a><a href="/presentations.html">Presentations</a></nav>
         <a className="contact-link" href="mailto:zhi-bo.li@gu.se">Let&apos;s talk ↗</a>
       </header>
 
@@ -67,7 +68,7 @@ export default function PublicationsPage() {
         })}
       </div>
 
-      <footer className="publication-footer"><Link href="/">← Back to homepage</Link><span>© 2026 Zhi-Bo Li</span></footer>
+      <footer className="publication-footer"><a href="/">← Back to homepage</a><span>© 2026 Zhi-Bo Li</span></footer>
       <Script src="https://embed.altmetric.com/assets/embed.js" strategy="afterInteractive" />
     </main>
   );

@@ -124,6 +124,9 @@ export default function VisitorStats() {
 
   useEffect(() => {
     const url = new URL(window.location.href);
+    const apiEndpoint = window.location.hostname === 'zblimeteo.github.io'
+      ? 'https://zhi-bo-li-climate.zbli-meteo.chatgpt.site/api/visit'
+      : '/api/visit';
     const ownerRequested = url.searchParams.get('owner') === '1';
     if (ownerRequested) {
       window.localStorage.setItem('zb-owner-visitor-excluded', '1');
@@ -132,15 +135,19 @@ export default function VisitorStats() {
     }
     const localPreview = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const ownerExcluded = ownerRequested || window.localStorage.getItem('zb-owner-visitor-excluded') === '1';
-    const alreadyRecorded = localPreview || ownerExcluded || window.sessionStorage.getItem('zb-visit-recorded') === '1';
-    fetch('/api/visit', {
+    const lastRecordedAt = Number(window.localStorage.getItem('zb-visit-recorded-at') ?? 0);
+    const recordedRecently = Number.isFinite(lastRecordedAt) && Date.now() - lastRecordedAt < 24 * 60 * 60 * 1000;
+    const alreadyRecorded = localPreview || ownerExcluded || recordedRecently;
+    fetch(apiEndpoint, {
       method: alreadyRecorded ? 'GET' : 'POST',
+      mode: 'cors',
+      credentials: 'omit',
       headers: alreadyRecorded ? undefined : { 'content-type': 'application/json' },
       body: alreadyRecorded ? undefined : JSON.stringify({ path: window.location.pathname }),
     })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((data: VisitorSnapshot) => {
-        if (!alreadyRecorded) window.sessionStorage.setItem('zb-visit-recorded', '1');
+        if (!alreadyRecorded) window.localStorage.setItem('zb-visit-recorded-at', String(Date.now()));
         setSnapshot(data);
         setReady(true);
       })

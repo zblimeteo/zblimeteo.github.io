@@ -6,6 +6,17 @@ type GeoRequest = Request & {
   cf?: { country?: string; city?: string; latitude?: string; longitude?: string };
 };
 
+const corsHeaders = {
+  'access-control-allow-origin': 'https://zblimeteo.github.io',
+  'access-control-allow-methods': 'GET, POST, OPTIONS',
+  'access-control-allow-headers': 'content-type',
+  vary: 'Origin',
+};
+
+function json(data: unknown) {
+  return Response.json(data, { headers: corsHeaders });
+}
+
 function countryName(code: string) {
   if (!code) return '';
   try { return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code; } catch { return code; }
@@ -18,7 +29,11 @@ function database() {
 export async function GET() {
   const db = database();
   await ensureVisitorSchema(db);
-  return Response.json(await getVisitorSnapshot(db));
+  return json(await getVisitorSnapshot(db));
+}
+
+export function OPTIONS() {
+  return new Response(null, { status: 204, headers: corsHeaders });
 }
 
 export async function POST(request: GeoRequest) {
@@ -26,7 +41,7 @@ export async function POST(request: GeoRequest) {
   await ensureVisitorSchema(db);
   const hostname = new URL(request.url).hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return Response.json(await getVisitorSnapshot(db));
+    return json(await getVisitorSnapshot(db));
   }
   const body = await request.json().catch(() => ({})) as { path?: string };
   const countryCode = request.cf?.country ?? request.headers.get('cf-ipcountry') ?? '';
@@ -40,5 +55,5 @@ export async function POST(request: GeoRequest) {
     longitude,
     path: typeof body.path === 'string' ? body.path.slice(0, 160) : '/',
   });
-  return Response.json(await getVisitorSnapshot(db));
+  return json(await getVisitorSnapshot(db));
 }

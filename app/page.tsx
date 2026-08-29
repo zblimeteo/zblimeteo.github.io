@@ -1,9 +1,10 @@
 import CollaborationMap from './collaboration-map';
 import Image from 'next/image';
-import Link from 'next/link';
 import { PublicationCitation, type Publication } from './publication-citation';
 import publications from './publications/publications.json';
 import VisitorStats from './visitor-stats';
+
+export const dynamic = 'force-static';
 
 const scholar = 'https://scholar.google.com/citations?user=bRxtRvsAAAAJ&hl=en';
 
@@ -61,7 +62,7 @@ export default function Home() {
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="Zhi-Bo Li, home">ZB<span>·</span>L</a>
         <nav aria-label="Main navigation">
-          <Link href="/" aria-current="page">Home</Link><Link href="/publications">Publications</Link><Link href="/presentations">Presentations</Link>
+          <a href="/" aria-current="page">Home</a><a href="/publications.html">Publications</a><a href="/presentations.html">Presentations</a>
         </nav>
         <a className="contact-link" href="mailto:zhi-bo.li@gu.se">Let&apos;s talk ↗</a>
       </header>
@@ -73,7 +74,7 @@ export default function Home() {
           <p className="hero-role">Climate dynamics · Extreme climate · Wind and energy · Paleoclimate</p>
           <p className="intro">I am a climate scientist studying the connections between near-surface winds, sea-level change and extreme weather. I also investigate deep-time paleoclimate, global monsoons, atmospheric teleconnections and aridity using observations and climate-model simulations. International collaboration is always welcome.</p>
           <div className="hero-actions">
-            <Link className="button primary" href="/publications">Browse publications <span>↗</span></Link>
+            <a className="button primary" href="/publications.html">Browse publications <span>↗</span></a>
             <a className="button quiet" href="/Zhi-Bo-Li-CV.pdf" download>Download full CV (PDF) ↓</a>
           </div>
         </div>
@@ -86,7 +87,7 @@ export default function Home() {
       </section>
 
       <section className="featured-section" id="publications">
-        <div className="featured-bar"><p className="eyebrow"><span /> Featured research</p><Link href="/publications">View all 41 publications ↗</Link></div>
+        <div className="featured-bar"><p className="eyebrow"><span /> Featured research</p><a href="/publications.html">View all 41 publications ↗</a></div>
         <ol className="featured-list">
           {featuredResearch.map((paper, index) => <li key={paper.doi}><span>{String(index + 1).padStart(2, '0')}</span><small>{paper.year}</small><p><PublicationCitation text={paper.citation} links={paper.links} /></p><a href={paper.doi ?? '#'} target="_blank" rel="noreferrer" aria-label="Open this featured paper on the journal website">↗</a></li>)}
         </ol>
