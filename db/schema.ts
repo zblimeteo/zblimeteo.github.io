@@ -24,7 +24,7 @@ export const createVisitorDevicesTable = `
 `;
 
 export const createUniqueVisitorsTable = `
-  CREATE TABLE IF NOT EXISTS unique_visitors_v2 (
+  CREATE TABLE IF NOT EXISTS unique_visitors_v3 (
     visitor_key TEXT PRIMARY KEY,
     visited_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     country_code TEXT,

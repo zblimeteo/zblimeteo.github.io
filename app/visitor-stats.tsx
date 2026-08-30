@@ -149,10 +149,11 @@ export default function VisitorStats() {
       window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
     }
     const localPreview = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const hostedPreview = window.location.hostname.endsWith('.chatgpt.site');
     const ownerExcluded = ownerRequested || window.localStorage.getItem('zb-owner-visitor-excluded') === '1';
     const lastRecordedAt = Number(window.localStorage.getItem('zb-visit-recorded-at') ?? 0);
     const recordedRecently = Number.isFinite(lastRecordedAt) && Date.now() - lastRecordedAt < 24 * 60 * 60 * 1000;
-    const alreadyRecorded = localPreview || ownerExcluded || recordedRecently;
+    const alreadyRecorded = localPreview || hostedPreview || ownerExcluded || recordedRecently;
     let visitorId = window.localStorage.getItem('zb-visitor-id');
     if (!visitorId) {
       visitorId = typeof crypto.randomUUID === 'function'

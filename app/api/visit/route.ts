@@ -13,6 +13,8 @@ const corsHeaders = {
   vary: 'Origin',
 };
 
+const publicSiteOrigin = 'https://zblimeteo.github.io';
+
 function json(data: unknown) {
   return Response.json(data, { headers: corsHeaders });
 }
@@ -39,6 +41,9 @@ export function OPTIONS() {
 export async function POST(request: GeoRequest) {
   const db = database();
   await ensureVisitorSchema(db);
+  if (request.headers.get('origin') !== publicSiteOrigin) {
+    return json(await getVisitorSnapshot(db));
+  }
   const hostname = new URL(request.url).hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return json(await getVisitorSnapshot(db));

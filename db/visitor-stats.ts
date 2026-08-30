@@ -22,7 +22,7 @@ export async function ensureVisitorSchema(db: D1Database) {
 
 export async function recordVisit(db: D1Database, visit: Omit<VisitorLocation, 'visits'> & { path: string; visitorKey: string }) {
   await db.prepare(`
-    INSERT OR IGNORE INTO unique_visitors_v2
+    INSERT OR IGNORE INTO unique_visitors_v3
       (visitor_key, country_code, country, city, latitude, longitude, path)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `).bind(
@@ -37,7 +37,7 @@ export async function recordVisit(db: D1Database, visit: Omit<VisitorLocation, '
 }
 
 export async function getVisitorSnapshot(db: D1Database): Promise<VisitorSnapshot> {
-  const totalResult = await db.prepare('SELECT COUNT(*) AS total FROM unique_visitors_v2').first<{ total: number }>();
+  const totalResult = await db.prepare('SELECT COUNT(*) AS total FROM unique_visitors_v3').first<{ total: number }>();
   const locationResult = await db.prepare(`
     SELECT
       country_code AS countryCode,
@@ -46,7 +46,7 @@ export async function getVisitorSnapshot(db: D1Database): Promise<VisitorSnapsho
       ROUND(AVG(latitude), 1) AS latitude,
       ROUND(AVG(longitude), 1) AS longitude,
       COUNT(*) AS visits
-    FROM unique_visitors_v2
+    FROM unique_visitors_v3
     WHERE country_code IS NOT NULL AND country_code != ''
     GROUP BY country_code, country
     ORDER BY visits DESC
