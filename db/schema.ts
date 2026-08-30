@@ -22,3 +22,16 @@ export const createVisitorDevicesTable = `
     first_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `;
+
+export const createUniqueVisitorsTable = `
+  CREATE TABLE IF NOT EXISTS unique_visitors_v2 (
+    visitor_key TEXT PRIMARY KEY,
+    visited_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    country_code TEXT,
+    country TEXT,
+    city TEXT,
+    latitude REAL,
+    longitude REAL,
+    path TEXT NOT NULL
+  )
+`;
