@@ -1,12 +1,12 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import { createVisitorEventsDateIndex, createVisitorEventsTable } from './schema';
+import { createVisitorDevicesTable, createVisitorEventsDateIndex, createVisitorEventsTable } from './schema';
 
 export type VisitorLocation = {
   countryCode: string;
   country: string;
   city: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   visits: number;
 };
 
@@ -16,10 +16,18 @@ export async function ensureVisitorSchema(db: D1Database) {
   await db.batch([
     db.prepare(createVisitorEventsTable),
     db.prepare(createVisitorEventsDateIndex),
+    db.prepare(createVisitorDevicesTable),
   ]);
 }
 
-export async function recordVisit(db: D1Database, visit: Omit<VisitorLocation, 'visits'> & { path: string }) {
+export async function recordVisit(db: D1Database, visit: Omit<VisitorLocation, 'visits'> & { path: string; visitorKey: string }) {
+  const deviceResult = await db.prepare(`
+    INSERT OR IGNORE INTO visitor_devices (visitor_key)
+    VALUES (?)
+  `).bind(visit.visitorKey).run();
+
+  if (Number(deviceResult.meta.changes ?? 0) === 0) return;
+
   await db.prepare(`
     INSERT INTO visitor_events (country_code, country, city, latitude, longitude, path)
     VALUES (?, ?, ?, ?, ?, ?)
@@ -27,8 +35,8 @@ export async function recordVisit(db: D1Database, visit: Omit<VisitorLocation, '
     visit.countryCode || null,
     visit.country || null,
     visit.city || null,
-    Number.isFinite(visit.latitude) ? visit.latitude : null,
-    Number.isFinite(visit.longitude) ? visit.longitude : null,
+    typeof visit.latitude === 'number' && Number.isFinite(visit.latitude) ? visit.latitude : null,
+    typeof visit.longitude === 'number' && Number.isFinite(visit.longitude) ? visit.longitude : null,
     visit.path,
   ).run();
 }
@@ -39,13 +47,13 @@ export async function getVisitorSnapshot(db: D1Database): Promise<VisitorSnapsho
     SELECT
       country_code AS countryCode,
       COALESCE(country, country_code) AS country,
-      COALESCE(city, '') AS city,
-      ROUND(latitude, 1) AS latitude,
-      ROUND(longitude, 1) AS longitude,
+      '' AS city,
+      ROUND(AVG(latitude), 1) AS latitude,
+      ROUND(AVG(longitude), 1) AS longitude,
       COUNT(*) AS visits
     FROM visitor_events
-    WHERE country_code IS NOT NULL AND latitude IS NOT NULL AND longitude IS NOT NULL
-    GROUP BY country_code, country, city, ROUND(latitude, 1), ROUND(longitude, 1)
+    WHERE country_code IS NOT NULL AND country_code != ''
+    GROUP BY country_code, country
     ORDER BY visits DESC
     LIMIT 48
   `).all<VisitorLocation>();

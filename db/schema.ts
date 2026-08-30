@@ -15,3 +15,10 @@ export const createVisitorEventsDateIndex = `
   CREATE INDEX IF NOT EXISTS idx_visitor_events_visited_at
   ON visitor_events(visited_at)
 `;
+
+export const createVisitorDevicesTable = `
+  CREATE TABLE IF NOT EXISTS visitor_devices (
+    visitor_key TEXT PRIMARY KEY,
+    first_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )
+`;

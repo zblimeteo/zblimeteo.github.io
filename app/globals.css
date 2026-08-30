@@ -106,6 +106,8 @@ h2 { font:400 clamp(42px,5vw,74px)/.98 Georgia, serif; letter-spacing:-.05em; ma
 .visitor-map-water { fill:#e8edef; }
 .visitor-map-land { fill:#d2cec2; stroke:#f7f4eb; stroke-width:.7; }
 .visitor-map-dot { fill:#a52621; stroke:white; stroke-width:1.5; opacity:.86; }
+.visitor-map-marker text { fill:#6f1512; font:700 12px/1 Arial,sans-serif; pointer-events:none; paint-order:stroke; stroke:#f7f4eb; stroke-width:3px; }
+.visitor-breakdown { width:min(100%,760px); margin:0 auto 12px; color:#52615d; font-size:14px; text-align:right; }
 footer { background:var(--blue); color:white; padding:48px clamp(24px,5vw,76px) 32px; display:grid; grid-template-columns:.6fr 1.4fr; align-items:start; gap:48px 80px; }
 footer .eyebrow { margin:0; }
 footer .eyebrow span { background:var(--acid); }

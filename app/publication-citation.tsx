@@ -17,7 +17,7 @@ function escapeRegExp(value: string) {
 }
 
 function findJournal(citation: string) {
-  const matches = [...citation.matchAll(/\. ([^.]+),\s*\d/g)];
+  const matches = [...citation.matchAll(/\. ([^.]+?)(?=,\s*\d)/g)];
   return matches.at(-1)?.[1] ?? '';
 }
 

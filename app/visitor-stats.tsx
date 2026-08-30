@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react';
-import { geoNaturalEarth1, geoPath } from 'd3-geo';
+import { geoCentroid, geoNaturalEarth1, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import world from '@d3-maps/atlas/world/countries/countries-110m';
 import type { VisitorLocation, VisitorSnapshot } from '../db/visitor-stats';
 
-type CountryFeature = GeoJSON.Feature<GeoJSON.Geometry>;
+type CountryFeature = GeoJSON.Feature<GeoJSON.Geometry, { name?: string; name_long?: string }>;
 
 const emptySnapshot: VisitorSnapshot = { total: 0, locations: [] };
 
@@ -14,12 +14,25 @@ function VisitorWorldMap({ countries, locations }: { countries: CountryFeature[]
   const [view, setView] = useState({ scale: 1, x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const drag = useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number } | null>(null);
-  const { projection, paths } = useMemo(() => {
+  const { projection, paths, plottedLocations } = useMemo(() => {
     const collection: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: countries };
     const mapProjection = geoNaturalEarth1().fitExtent([[18, 18], [942, 462]], collection);
     const path = geoPath(mapProjection);
-    return { projection: mapProjection, paths: countries.map((country) => path(country) ?? '') };
-  }, [countries]);
+    const centroids = new Map<string, [number, number]>();
+    countries.forEach((country) => {
+      const center = geoCentroid(country) as [number, number];
+      const names = [country.properties?.name, country.properties?.name_long].filter(Boolean) as string[];
+      names.forEach((name) => centroids.set(name.toLowerCase(), center));
+    });
+    const resolved = locations.map((location) => {
+      const stored = typeof location.longitude === 'number' && typeof location.latitude === 'number'
+        ? [location.longitude, location.latitude] as [number, number]
+        : null;
+      const center = stored ?? centroids.get(location.country.toLowerCase()) ?? null;
+      return center ? { ...location, center } : null;
+    }).filter(Boolean) as Array<VisitorLocation & { center: [number, number] }>;
+    return { projection: mapProjection, paths: countries.map((country) => path(country) ?? ''), plottedLocations: resolved };
+  }, [countries, locations]);
 
   const clampView = (scale: number, x: number, y: number) => ({
     scale,
@@ -90,21 +103,23 @@ function VisitorWorldMap({ countries, locations }: { countries: CountryFeature[]
           <rect width="960" height="480" className="visitor-map-water" />
           <g transform={`translate(${view.x} ${view.y}) scale(${view.scale})`}>
             {paths.map((path, index) => <path key={index} d={path} vectorEffect="non-scaling-stroke" className="visitor-map-land" />)}
-            {locations.map((location, index) => {
-              const point = projection([location.longitude, location.latitude]);
+            {plottedLocations.map((location, index) => {
+              const point = projection(location.center);
               if (!point) return null;
               const [x, y] = point;
               return (
-                <circle
-                  key={`${location.countryCode}-${location.city}-${index}`}
-                  cx={x}
-                  cy={y}
-                  r={Math.min(6, 2.2 + Math.log1p(location.visits) * 1.35)}
-                  vectorEffect="non-scaling-stroke"
-                  className="visitor-map-dot"
-                >
-                  <title>{location.city ? `${location.city}, ` : ''}{location.country} · {location.visits} visits</title>
-                </circle>
+                <g key={`${location.countryCode}-${index}`} className="visitor-map-marker">
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={Math.min(6, 2.2 + Math.log1p(location.visits) * 1.35)}
+                    vectorEffect="non-scaling-stroke"
+                    className="visitor-map-dot"
+                  >
+                    <title>{location.country} · {location.visits} visits</title>
+                  </circle>
+                  <text x={x + 8} y={y + 4} vectorEffect="non-scaling-stroke">{location.visits}</text>
+                </g>
               );
             })}
           </g>
@@ -138,12 +153,19 @@ export default function VisitorStats() {
     const lastRecordedAt = Number(window.localStorage.getItem('zb-visit-recorded-at') ?? 0);
     const recordedRecently = Number.isFinite(lastRecordedAt) && Date.now() - lastRecordedAt < 24 * 60 * 60 * 1000;
     const alreadyRecorded = localPreview || ownerExcluded || recordedRecently;
+    let visitorId = window.localStorage.getItem('zb-visitor-id');
+    if (!visitorId) {
+      visitorId = typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+      window.localStorage.setItem('zb-visitor-id', visitorId);
+    }
     fetch(apiEndpoint, {
       method: alreadyRecorded ? 'GET' : 'POST',
       mode: 'cors',
       credentials: 'omit',
       headers: alreadyRecorded ? undefined : { 'content-type': 'application/json' },
-      body: alreadyRecorded ? undefined : JSON.stringify({ path: window.location.pathname }),
+      body: alreadyRecorded ? undefined : JSON.stringify({ path: window.location.pathname, visitorId }),
     })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((data: VisitorSnapshot) => {
@@ -160,6 +182,9 @@ export default function VisitorStats() {
         <div><p className="eyebrow"><span /> Visitors</p><h2 id="visitor-heading">A growing global readership.</h2></div>
         <p className="visitor-count"><strong>{ready ? snapshot.total.toLocaleString('en-US') : '—'}</strong><span>Recorded visits</span></p>
       </div>
+      {ready && snapshot.locations.length > 0 ? <p className="visitor-breakdown">
+        {snapshot.locations.map((location) => `${location.country} ${location.visits}`).join(' · ')}
+      </p> : null}
       <div className="visitor-maps">
         <VisitorWorldMap countries={countries} locations={snapshot.locations} />
       </div>

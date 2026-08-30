@@ -43,7 +43,11 @@ export async function POST(request: GeoRequest) {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return json(await getVisitorSnapshot(db));
   }
-  const body = await request.json().catch(() => ({})) as { path?: string };
+  const body = await request.json().catch(() => ({})) as { path?: string; visitorId?: string };
+  const visitorKey = typeof body.visitorId === 'string' && /^[a-zA-Z0-9-]{16,80}$/.test(body.visitorId)
+    ? body.visitorId
+    : '';
+  if (!visitorKey) return json(await getVisitorSnapshot(db));
   const countryCode = request.cf?.country ?? request.headers.get('cf-ipcountry') ?? '';
   const latitude = Number(request.cf?.latitude ?? Number.NaN);
   const longitude = Number(request.cf?.longitude ?? Number.NaN);
@@ -54,6 +58,7 @@ export async function POST(request: GeoRequest) {
     latitude,
     longitude,
     path: typeof body.path === 'string' ? body.path.slice(0, 160) : '/',
+    visitorKey,
   });
   return json(await getVisitorSnapshot(db));
 }
