@@ -79,7 +79,7 @@ export default function Home() {
           </div>
         </div>
         <div className="hero-profile">
-          <figure className="portrait-card"><Image src="/head-enhanced.png" alt="Portrait of Zhi-Bo Li" width={640} height={640} priority /></figure>
+          <figure className="portrait-card"><Image src="/prague-portrait.jpg" alt="Portrait of Zhi-Bo Li in Prague" width={1200} height={1200} priority /></figure>
           <div className="profile-details">
             <p><span>Current position · from 1 September 2026</span><strong>Postdoctoral Researcher</strong><small>Uppsala University · Department of Earth Sciences</small></p>
           </div>
