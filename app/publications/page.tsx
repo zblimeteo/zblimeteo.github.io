@@ -8,9 +8,11 @@ export const dynamic = 'force-static';
 export const metadata: Metadata = {
   title: 'Publications · Zhi-Bo Li',
   description: 'Complete peer-reviewed publication record of climate scientist Zhi-Bo Li.',
+  alternates: { canonical: '/publications.html' },
   openGraph: {
     title: 'Publications · Zhi-Bo Li',
     description: 'Complete peer-reviewed publication record in climate dynamics, extremes, wind and paleoclimate.',
+    url: '/publications.html',
     images: [],
   },
   twitter: { card: 'summary', title: 'Publications · Zhi-Bo Li', description: 'Complete peer-reviewed publication record.', images: [] },

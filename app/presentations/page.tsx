@@ -8,7 +8,8 @@ type Presentation = { date: string; location: string; event: string; title: stri
 export const metadata: Metadata = {
   title: 'Scientific Presentations · Zhi-Bo Li',
   description: 'Scientific conference talks, invited presentations and posters by climate scientist Zhi-Bo Li.',
-  openGraph: { title: 'Scientific Presentations · Zhi-Bo Li', description: 'Conference talks, invited presentations and posters.', images: [] },
+  alternates: { canonical: '/presentations.html' },
+  openGraph: { title: 'Scientific Presentations · Zhi-Bo Li', description: 'Conference talks, invited presentations and posters.', url: '/presentations.html', images: [] },
   twitter: { card: 'summary', title: 'Scientific Presentations · Zhi-Bo Li', description: 'Conference talks, invited presentations and posters.', images: [] },
 };
 
