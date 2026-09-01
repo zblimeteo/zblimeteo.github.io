@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description: 'Academic website of Zhi-Bo Li, a climate scientist at Uppsala University studying wind, extreme weather, hydroclimate, atmospheric teleconnections and paleoclimate.',
   authors: [{ name: 'Zhi-Bo Li', url: siteUrl }],
   creator: 'Zhi-Bo Li',
+  verification: { google: '-LnQY7Kn3NO-mwE27VBnIQh3SVFgZlCZQ2gvIIqmZHA' },
   keywords: ['Zhi-Bo Li', 'Zhibo Li', 'climate scientist', 'Uppsala University', 'climate dynamics', 'extreme climate', 'wind energy', 'hydroclimate', 'paleoclimate'],
   alternates: { canonical: '/' },
   robots: {
