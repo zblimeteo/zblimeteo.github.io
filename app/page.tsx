@@ -58,7 +58,7 @@ const activities: Array<{ label: string; items: Array<{ date: string; role: stri
 
 export default function Home() {
   return (
-    <main>
+    <main className="home-page">
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="Zhi-Bo Li, home">ZB<span>·</span>L</a>
         <nav aria-label="Main navigation">
@@ -97,7 +97,11 @@ export default function Home() {
         <div className="experience-heading"><h2 className="section-title">Experience</h2></div>
         <div className="timeline">
           {experience.map((item) => (
-            <article className="timeline-row" key={`${item.date}-${item.role}`}><p>{item.date}</p><div><h3>{item.role}</h3><strong>{item.place}</strong><span className="experience-links">{item.prefix}: {item.people.map((person, index) => <span key={person.name}>{index > 0 ? ' · ' : ''}{person.url ? <a href={person.url} target="_blank" rel="noreferrer">{person.name} ↗</a> : person.name}</span>)}</span></div></article>
+            <article className="timeline-row" key={`${item.date}-${item.role}`}>
+              <p>{item.date}</p>
+              <h3>{item.role}</h3>
+              <div className="experience-detail"><strong>{item.place}</strong><span className="experience-links">{item.prefix}: {item.people.map((person, index) => <span key={person.name}>{index > 0 ? ' · ' : ''}{person.url ? <a href={person.url} target="_blank" rel="noreferrer">{person.name} ↗</a> : person.name}</span>)}</span></div>
+            </article>
           ))}
         </div>
         <aside className="activity-sections" aria-label="Editorship, projects, community and teaching">
