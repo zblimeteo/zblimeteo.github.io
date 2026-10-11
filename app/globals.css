@@ -331,3 +331,92 @@ footer .eyebrow span { background:var(--acid); }
   .publication-page-hero { padding-top:45px; }
   .publication-record { gap:14px; }
 }
+
+/* Consistent section titles, aligned records and map sidebars. */
+.site-header nav { font-size:22px; gap:38px; }
+.section-title,.activity-section h3 { color:var(--blue); font:400 42px/1.2 Georgia,serif; letter-spacing:0; text-transform:none; }
+.section-title { margin:0; }
+.hero .section-title { margin-bottom:26px; }
+.featured-bar h2 { flex:1; }
+.official-article-inline { color:var(--blue); font:700 15px/1.6 Arial,sans-serif; white-space:nowrap; border-bottom:1px solid currentColor; margin-left:10px; }
+/* Keep browser extensions from adding extra download buttons to article links. */
+.featured-list a[href*="sci-hub" i],.complete-publication-list a[href*="sci-hub" i] { display:none !important; }
+.activity-list article { grid-template-columns:120px minmax(430px,.85fr) minmax(0,1fr); }
+.research-projects .activity-list { max-width:1900px; padding-right:28px; }
+.research-projects .activity-list .project-row { grid-template-columns:120px 300px minmax(0,1fr) 120px; gap:28px; }
+.project-funding { text-align:left; align-self:start; padding-left:8px; }
+.map-columns { grid-template-columns:repeat(2,minmax(0,1fr)); gap:40px; }
+.visitor-section { grid-column:auto; }
+.network-map-wrap,.visitor-layout { display:grid; grid-template-columns:minmax(0,1fr) 165px; gap:20px; align-items:start; }
+.network-section .map-frame { width:100%; }
+.map-detail { margin:0; padding:14px; min-height:0; border:1px solid var(--line); background:var(--paper); color:var(--ink); }
+.map-detail small { color:var(--blue); font-size:14px; font-weight:700; }
+.map-detail strong { font-size:26px; margin:9px 0; }
+.map-detail span { color:#34433e; font-size:13px; line-height:1.5; }
+.map-detail p { color:var(--ink); font-size:14px; line-height:1.65; margin-top:12px; }
+.map-frame svg,.visitor-map-water { background:#e8edef; fill:#e8edef; }
+.visitor-breakdown { max-height:260px; }
+.publication-key { justify-content:flex-start; }
+.publication-key>a { margin-left:0; order:-1; }
+.publication-metrics { display:flex; align-items:center; gap:18px; min-height:58px; }
+.publication-metrics .altmetric-embed:empty { display:none; }
+.publication-metrics .altmetric-embed img { display:block; width:58px !important; height:58px !important; max-width:none; }
+.official-article-icon { display:grid; place-items:center; flex:0 0 58px; width:58px; height:58px; border:1px solid var(--blue); border-radius:50%; color:var(--blue); }
+.official-article-icon svg { width:32px; height:32px; }
+.official-article-icon:hover,.official-article-icon:focus-visible { color:white; background:var(--blue); outline-offset:4px; }
+.presentation-table-wrap { padding:44px clamp(24px,5vw,76px) 70px; }
+.presentation-table { width:100%; border-collapse:collapse; table-layout:fixed; font:18px/1.6 Arial,sans-serif; }
+.presentation-col-date { width:9%; }
+.presentation-col-title { width:40%; }
+.presentation-col-event { width:28%; }
+.presentation-col-location { width:14%; }
+.presentation-col-type { width:9%; }
+.presentation-table th { text-align:left; color:var(--blue); font-size:18px; border-top:1px solid var(--ink); border-bottom:1px solid var(--ink); padding:18px 20px 18px 0; }
+.presentation-table td { vertical-align:top; padding:26px 20px 26px 0; border-bottom:1px solid var(--line); overflow-wrap:break-word; }
+.presentation-table td:first-child { color:var(--blue); font-weight:700; white-space:nowrap; }
+.presentation-table td:nth-child(2) { font-weight:700; }
+.presentation-table th:last-child,.presentation-table td:last-child { padding-right:0; }
+@media(min-width:1800px) {
+  .map-columns { padding-left:max(76px,calc((100vw - 1760px)/2)); padding-right:max(76px,calc((100vw - 1760px)/2)); }
+  .network-map-wrap,.visitor-layout { grid-template-columns:minmax(0,1fr) 185px; }
+}
+@media(max-width:1100px) {
+  .site-header nav { font-size:20px; gap:28px; }
+  .map-columns { gap:26px; }
+  .network-map-wrap,.visitor-layout { grid-template-columns:minmax(0,1fr) 145px; gap:16px; }
+  .research-projects .activity-list .project-row { grid-template-columns:100px 240px minmax(0,1fr) 110px; gap:20px; }
+  .research-projects .activity-list { padding-right:16px; }
+  .presentation-col-date { width:10%; }
+  .presentation-col-title { width:36%; }
+  .presentation-col-event { width:26%; }
+  .presentation-col-location { width:17%; }
+  .presentation-col-type { width:11%; }
+  .presentation-table td,.presentation-table th { padding-right:16px; }
+}
+@media(max-width:900px) {
+  .map-columns { grid-template-columns:1fr; gap:42px; }
+  .network-map-wrap,.visitor-layout { grid-template-columns:minmax(0,1fr) 165px; gap:20px; }
+  .activity-list article,.research-projects .activity-list .project-row { grid-template-columns:100px minmax(0,1fr); gap:12px 22px; }
+  .research-projects .activity-list { padding-right:0; }
+  .project-funding { grid-column:2; padding-left:0; }
+}
+@media(max-width:700px) {
+  .presentation-table,.presentation-table tbody,.presentation-table tr,.presentation-table td { display:block; width:100%; }
+  .presentation-table colgroup,.presentation-table thead { display:none; }
+  .presentation-table tr { padding:22px 0; border-bottom:1px solid var(--line); }
+  .presentation-table td { display:grid; grid-template-columns:90px minmax(0,1fr); gap:14px; padding:8px 0; border:0; }
+  .presentation-table td::before { content:attr(data-label); font-size:14px; font-weight:700; color:#34433e; }
+  .presentation-table td:first-child { white-space:normal; }
+}
+@media(max-width:560px) {
+  .site-header { grid-template-columns:1fr; gap:18px; }
+  .site-header .wordmark { justify-self:center; }
+  .site-header nav { font-size:18px; gap:24px; justify-content:center; }
+  .section-title,.activity-section h3 { font-size:34px; }
+  .network-map-wrap,.visitor-layout { grid-template-columns:1fr; gap:16px; }
+  .map-detail { margin:0; }
+  .activity-list article,.research-projects .activity-list .project-row { grid-template-columns:1fr; gap:10px; }
+  .project-funding { grid-column:1; }
+  .publication-metrics { gap:18px; }
+  .presentation-table-wrap { padding-top:20px; }
+}

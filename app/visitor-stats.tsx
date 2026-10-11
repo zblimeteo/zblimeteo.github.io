@@ -9,7 +9,7 @@ import { traceCountry } from '../db/visitor-geolocation';
 import MapFrame from './map-frame';
 import type * as GeoJSON from 'geojson';
 
-type CountryFeature = GeoJSON.Feature<GeoJSON.Geometry, { name?: string; name_long?: string }>;
+type CountryFeature = GeoJSON.Feature<GeoJSON.Geometry, { id?: string; name?: string; name_long?: string }>;
 const emptySnapshot: VisitorSnapshot = { total: 0, locations: [] };
 
 function storageGet(key: string) {
@@ -35,8 +35,9 @@ async function browserCountry(apiEndpoint: string) {
 function VisitorWorldMap({ locations }: { locations: VisitorLocation[] }) {
   const { projection, paths, plottedLocations } = useMemo(() => {
     const collection = feature(world as never, (world as never as { objects: { features: never } }).objects.features) as unknown as GeoJSON.FeatureCollection;
-    const countries = collection.features as CountryFeature[];
-    const mapProjection = geoNaturalEarth1().fitExtent([[18, 18], [942, 462]], collection);
+    const countries = (collection.features as CountryFeature[]).filter(country => country.properties.id !== 'ATA');
+    const visibleCollection: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: countries };
+    const mapProjection = geoNaturalEarth1().fitExtent([[18, 18], [942, 462]], visibleCollection);
     const path = geoPath(mapProjection);
     const centers = new Map<string, [number, number]>();
     countries.forEach(country => {
@@ -122,6 +123,5 @@ export default function VisitorStats() {
         {status === 'ready' ? <ul>{snapshot.locations.map(location => <li key={location.countryCode || 'unknown'}><span>{location.country}</span><strong>{location.visits}</strong></li>)}</ul> : <p className="visitor-status">{status === 'loading' ? 'Loading…' : 'Statistics temporarily unavailable'}</p>}
       </aside>
     </div>
-    <p className="visitor-note">Approximate IP-based countries · One record per browser · VPNs may affect location</p>
   </section>;
 }

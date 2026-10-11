@@ -36,11 +36,11 @@ export default function CollaborationMap() {
   const [activeId, setActiveId] = useState('CHN');
   const countries = useMemo(() => {
     const collection = feature(world as never, (world as never as { objects: { features: never } }).objects.features);
-    return (collection as unknown as GeoJSON.FeatureCollection).features as CountryFeature[];
+    return ((collection as unknown as GeoJSON.FeatureCollection).features as CountryFeature[]).filter(country => country.properties.id !== 'ATA');
   }, []);
   const paths = useMemo(() => {
     const collection: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: countries };
-    const projection = geoNaturalEarth1().fitExtent([[14, 18], [946, 462]], collection);
+    const projection = geoNaturalEarth1().fitExtent([[18, 18], [942, 462]], collection);
     const path = geoPath(projection);
     return countries.map((country) => ({ country, d: path(country) ?? '' }));
   }, [countries]);
@@ -49,7 +49,6 @@ export default function CollaborationMap() {
   return (
     <div className="network-map-wrap">
       <MapFrame label="Academic network map">
-        <path className="map-sphere" vectorEffect="non-scaling-stroke" d={geoPath(geoNaturalEarth1().fitExtent([[14, 18], [946, 462]], { type: 'Sphere' }))({ type: 'Sphere' }) ?? ''} />
           {paths.map(({ country, d }) => {
             const id = country.properties.id;
             const data = collaborationData[id];

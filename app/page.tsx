@@ -64,12 +64,12 @@ export default function Home() {
         <nav aria-label="Main navigation">
           <a href="/" aria-current="page">Home</a><a href="/publications.html">Publications</a><a href="/presentations.html">Presentations</a>
         </nav>
-        <a className="contact-link" href="mailto:zhi-bo.li@gu.se">Let&apos;s talk ↗</a>
+        <a className="contact-link" href="mailto:zhi-bo.li@geo.uu.se">Let&apos;s talk ↗</a>
       </header>
 
       <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="eyebrow"><span /> Climate scientist</p>
+          <p className="section-title">Climate scientist</p>
           <h1>Zhi-Bo Li</h1>
           <p className="hero-role">Climate dynamics · Extreme climate · Wind and energy · Paleoclimate</p>
           <p className="intro">I am a climate scientist studying the connections between near-surface winds, sea-level change and extreme weather. I also investigate deep-time paleoclimate, global monsoons, atmospheric teleconnections and aridity using observations and climate-model simulations. International collaboration is always welcome.</p>
@@ -87,10 +87,22 @@ export default function Home() {
       </section>
 
       <section className="featured-section" id="publications">
-        <div className="featured-bar"><p className="eyebrow"><span /> Featured research</p><a href="/publications.html">View all 41 publications ↗</a></div>
+        <div className="featured-bar"><h2 className="section-title">Featured research</h2><a href="/publications.html">View all 41 publications ↗</a></div>
         <ol className="featured-list">
-          {featuredResearch.map((paper, index) => <li key={paper.doi}><span>{String(index + 1).padStart(2, '0')}</span><small>{paper.year}</small><PublicationLines paper={paper} /><PublicationHighlights paper={paper} /></li>)}
+          {featuredResearch.map((paper, index) => <li key={paper.doi}><span>{String(index + 1).padStart(2, '0')}</span><small>{paper.year}</small><PublicationLines paper={paper} showOfficialLink /><PublicationHighlights paper={paper} /></li>)}
         </ol>
+      </section>
+
+      <section className="experience-section" id="experience">
+        <div className="experience-heading"><h2 className="section-title">Experience</h2></div>
+        <div className="timeline">
+          {experience.map((item) => (
+            <article className="timeline-row" key={`${item.date}-${item.role}`}><p>{item.date}</p><div><h3>{item.role}</h3><strong>{item.place}</strong><span className="experience-links">{item.prefix}: {item.people.map((person, index) => <span key={person.name}>{index > 0 ? ' · ' : ''}{person.url ? <a href={person.url} target="_blank" rel="noreferrer">{person.name} ↗</a> : person.name}</span>)}</span></div></article>
+          ))}
+        </div>
+        <aside className="activity-sections" aria-label="Editorship, projects, community and teaching">
+          {activities.map((group) => <section className={`activity-section${group.label === 'Research projects' ? ' research-projects' : ''}`} key={group.label}><h3>{group.label}</h3><div className="activity-list">{group.items.map((item) => <article className={group.label === 'Research projects' ? 'project-row' : undefined} key={`${item.date}-${item.role}-${item.detail}`}><small>{item.date}</small><strong>{item.role}</strong><p>{item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.detail} ↗</a> : item.detail}</p>{group.label === 'Research projects' ? <span className="project-funding">{item.funding}</span> : null}</article>)}</div></section>)}
+        </aside>
       </section>
 
       <div className="map-columns">
@@ -101,21 +113,9 @@ export default function Home() {
         <VisitorStats />
       </div>
 
-      <section className="experience-section" id="experience">
-        <div className="experience-heading"><p className="eyebrow"><span /> Experience</p></div>
-        <div className="timeline">
-          {experience.map((item) => (
-            <article className="timeline-row" key={`${item.date}-${item.role}`}><p>{item.date}</p><div><h3>{item.role}</h3><strong>{item.place}</strong><span className="experience-links">{item.prefix}: {item.people.map((person, index) => <span key={person.name}>{index > 0 ? ' · ' : ''}{person.url ? <a href={person.url} target="_blank" rel="noreferrer">{person.name} ↗</a> : person.name}</span>)}</span></div></article>
-          ))}
-        </div>
-        <aside className="activity-sections" aria-label="Editorship, projects, community and teaching">
-          {activities.map((group) => <section className="activity-section" key={group.label}><h3>{group.label}</h3><div className="activity-list">{group.items.map((item) => <article className={'funding' in item ? 'has-funding' : undefined} key={`${item.date}-${item.role}-${item.detail}`}><small>{item.date}</small><strong>{item.role}</strong><p>{item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.detail} ↗</a> : item.detail}</p>{'funding' in item ? <span className="project-funding">{item.funding}</span> : null}</article>)}</div></section>)}
-        </aside>
-      </section>
-
       <footer>
         <div><p className="eyebrow"><span /> Contact</p></div>
-        <div className="footer-links"><a href="mailto:zhi-bo.li@gu.se">zhi-bo.li@gu.se ↗</a><a href={scholar} target="_blank" rel="noreferrer">Google Scholar ↗</a><a href="https://orcid.org/0000-0001-9135-1583" target="_blank" rel="noreferrer">ORCID ↗</a><a href="https://www.researchgate.net/profile/Zhi-Bo-Li" target="_blank" rel="noreferrer">ResearchGate ↗</a></div>
+        <div className="footer-links"><a href="mailto:zhi-bo.li@geo.uu.se">zhi-bo.li@geo.uu.se ↗</a><a href={scholar} target="_blank" rel="noreferrer">Google Scholar ↗</a><a href="https://orcid.org/0000-0001-9135-1583" target="_blank" rel="noreferrer">ORCID ↗</a><a href="https://www.researchgate.net/profile/Zhi-Bo-Li" target="_blank" rel="noreferrer">ResearchGate ↗</a></div>
         <p className="copyright">© 2026 Zhi-Bo Li · Designed for clarity, built for change.</p>
       </footer>
     </main>

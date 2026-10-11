@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import { doiIdentifier, PublicationLines, PublicationHighlights, type Publication } from '../publication-citation';
+import { doiIdentifier, PublicationLines, PublicationHighlights, OfficialArticleLink, type Publication } from '../publication-citation';
 import publications from './publications.json';
 
 export const dynamic = 'force-static';
@@ -28,7 +28,7 @@ export default function PublicationsPage() {
       <header className="site-header publications-header">
         <a className="wordmark" href="/" aria-label="Zhi-Bo Li, home">ZB<span>·</span>L</a>
         <nav aria-label="Main navigation"><a href="/">Home</a><a href="/publications.html" aria-current="page">Publications</a><a href="/presentations.html">Presentations</a></nav>
-        <a className="contact-link" href="mailto:zhi-bo.li@gu.se">Let&apos;s talk ↗</a>
+        <a className="contact-link" href="mailto:zhi-bo.li@geo.uu.se">Let&apos;s talk ↗</a>
       </header>
 
       <section className="publication-page-hero" aria-label="Publication overview">
@@ -40,7 +40,7 @@ export default function PublicationsPage() {
       </section>
 
       <section className="publication-key">
-        <p><strong>*</strong> Corresponding author</p><p><strong>Bold</strong> Zhi-Bo Li</p><p><span className="student-key">Underline</span> Supervised student</p><p><span className="mini-altmetric"><i>90</i></span> Live Altmetric score</p>
+        <p><strong>*</strong> Corresponding author</p><p><span className="student-key">Underline</span> Supervised student</p>
         <a href="https://scholar.google.com/citations?user=bRxtRvsAAAAJ&hl=en" target="_blank" rel="noreferrer">Google Scholar ↗</a>
       </section>
 
@@ -57,14 +57,14 @@ export default function PublicationsPage() {
                     <PublicationLines paper={publication} />
                     <div className="publication-actions">
                       <PublicationHighlights paper={publication} />
-                      {publication.doi ? <div
+                      <div className="publication-metrics">{publication.doi ? <div
                         className="altmetric-embed"
                         data-badge-type="donut"
                         data-badge-popover="left"
                         data-hide-no-mentions="true"
                         data-doi={doiIdentifier(publication.doi)}
                         aria-label="Live Altmetric Attention Score"
-                      /> : null}
+                      /> : null}<OfficialArticleLink paper={publication} /></div>
                     </div>
                   </li>
                 ))}

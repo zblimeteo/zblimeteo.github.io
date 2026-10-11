@@ -1,5 +1,5 @@
 export type MediaLink = { label: string; url: string };
-export type Publication = { year: string; citation: string; doi: string | null; altmetric?: number; links?: MediaLink[]; authors: string; title: string; journal: string; details: string; annotations: string[]; firstAuthor: boolean; correspondingAuthor: boolean };
+export type Publication = { year: string; citation: string; doi: string | null; officialUrl: string; altmetric?: number; links?: MediaLink[]; authors: string; title: string; journal: string; details: string; annotations: string[]; firstAuthor: boolean; correspondingAuthor: boolean };
 
 const supervisedStudents = [
   'You Wu',
@@ -47,15 +47,21 @@ export function PublicationCitation({ text, links = [] }: { text: string; links?
   })}</>;
 }
 
-export function PublicationLines({ paper }: { paper: Publication }) {
+export function PublicationLines({ paper, showOfficialLink = false }: { paper: Publication; showOfficialLink?: boolean }) {
   return <div className="publication-lines">
     <p className="publication-authors"><PublicationCitation text={paper.authors} /></p>
     <p className="publication-title">{paper.title}</p>
-    <p className="publication-journal"><b className="journal-name">{paper.journal}</b>, {paper.details}</p>
+    <p className="publication-journal"><b className="journal-name">{paper.journal}</b>, {paper.details}{showOfficialLink ? <> <a className="official-article-inline" href={paper.officialUrl} target="_blank" rel="noreferrer">Article ↗</a></> : null}</p>
     {paper.annotations.length ? <p className="publication-annotations">{paper.annotations.map(note => <span key={note}>{note}</span>)}</p> : null}
   </div>;
 }
 
 export function PublicationHighlights({ paper }: { paper: Publication }) {
   return <div className="publication-highlights">{paper.links?.map((link,index) => <a key={`${link.url}-${index}`} href={link.url} target="_blank" rel="noreferrer">{link.label} ↗</a>)}</div>;
+}
+
+export function OfficialArticleLink({ paper }: { paper: Publication }) {
+  return <a className="official-article-icon" href={paper.officialUrl} target="_blank" rel="noreferrer" aria-label={`Official article page: ${paper.title}`} title="Official article page">
+    <svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M17 7H7v18h18V15M17 7h8v8M25 7 13 19" /><path d="M11 23h10" /></svg>
+  </a>;
 }
