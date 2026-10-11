@@ -1,6 +1,6 @@
 import CollaborationMap from './collaboration-map';
 import Image from 'next/image';
-import { PublicationCitation, type Publication } from './publication-citation';
+import { PublicationLines, PublicationHighlights, type Publication } from './publication-citation';
 import publications from './publications/publications.json';
 import VisitorStats from './visitor-stats';
 
@@ -11,15 +11,15 @@ const scholar = 'https://scholar.google.com/citations?user=bRxtRvsAAAAJ&hl=en';
 const experience = [
   { date: '1 Sep 2026—present', role: 'Postdoctoral Researcher', place: 'Department of Earth Sciences · Uppsala University', prefix: 'Working with', people: [{ name: 'Gabriele Messori', url: 'https://gmessori.eu/' }] },
   { date: '1 Sep 2024—30 Aug 2026', role: 'Postdoctoral Researcher', place: 'Department of Earth Sciences · University of Gothenburg', prefix: 'Worked with', people: [{ name: 'Deliang Chen', url: 'http://faculty.dess.tsinghua.edu.cn/chendeliang/en/index.htm' }, { name: 'Céline Heuzé', url: 'https://cheuze.com/' }] },
-  { date: 'Sep 2020—Jun 2024', role: 'Ph.D. in Atmospheric Science', place: 'Peking University', prefix: 'Physical Oceanography · Advisor', people: [{ name: 'Yongyun Hu', url: 'https://faculty.pku.edu.cn/yyhu/' }] },
+  { date: 'Sep 2020—Jun 2024', role: 'Ph.D. in Atmospheric Science (Physical Oceanography)', place: 'Peking University', prefix: 'Advisor', people: [{ name: 'Yongyun Hu', url: 'https://faculty.pku.edu.cn/yyhu/' }] },
   { date: 'Aug 2019—Aug 2020', role: 'Research Assistant', place: 'Institute of Atmospheric Physics · Chinese Academy of Sciences', prefix: 'Worked with', people: [{ name: 'Wen Chen', url: 'http://www.srees.ynu.edu.cn/info/1454/3941.htm' }] },
-  { date: 'Sep 2012—Jun 2019', role: 'B.S. & M.S. in Atmospheric Science', place: 'Nanjing University of Information Science & Technology', prefix: 'Advisors', people: [{ name: 'Tim Li' }, { name: 'Ying Sun', url: 'https://graduate.camscma.cn/article/3/67.html' }] },
+  { date: 'Sep 2012—Jun 2019', role: 'B.S. & M.S. in Atmospheric Science', place: 'Nanjing University of Information Science & Technology', prefix: 'Advisors', people: [{ name: 'Tim Li', url: 'https://www.researchgate.net/profile/Tim-Li-7?ev=brs_overview' }, { name: 'Ying Sun', url: 'https://graduate.camscma.cn/article/3/67.html' }] },
 ];
 
 const featuredDois = ['10.1029/2025JD044894', '10.5194/wcd-6-1107-2025', '10.1029/2024PA004886', '10.1029/2025GL115537', '10.1029/2019EF001276'];
 const featuredResearch = featuredDois.map((id) => (publications as Publication[]).find((paper) => paper.doi?.includes(id))).filter(Boolean) as Publication[];
 
-const activities = [
+const activities: Array<{ label: string; items: Array<{ date: string; role: string; detail: string; url?: string; funding?: string }> }> = [
   {
     label: 'Editorship',
     items: [
@@ -31,8 +31,8 @@ const activities = [
   {
     label: 'Research projects',
     items: [
-      { date: '2026—2027', role: 'Principal Investigator · SEK 50,000', detail: 'Extratropical cyclone clustering and extreme sea level around the North Sea · Helge Ax:son Johnsons Foundation' },
-      { date: '2026—2027', role: 'Principal Investigator · SEK 40,000', detail: 'Cyclone clustering and extreme sea level along the Nordic coast · Stiftelsen Lars Hiertas Minne' },
+      { date: '2026—2027', role: 'Principal Investigator', funding: 'SEK 50,000', detail: 'Extratropical cyclone clustering and extreme sea level around the North Sea · Helge Ax:son Johnsons Foundation' },
+      { date: '2026—2027', role: 'Principal Investigator', funding: 'SEK 40,000', detail: 'Cyclone clustering and extreme sea level along the Nordic coast · Stiftelsen Lars Hiertas Minne' },
       { date: '2024—2026', role: 'Main participant · Formas', detail: 'Impact of climate variation and change on offshore wind energy potential' },
       { date: '2024—2025', role: 'Main participant · Formas', detail: 'Northern European enclosure dam and protection from sea-level rise' },
       { date: '2020—2024', role: 'Participant · NSFC', detail: 'Continental evolution and monsoon changes' },
@@ -69,7 +69,7 @@ export default function Home() {
 
       <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="eyebrow"><span /> Climate scientist in Sweden</p>
+          <p className="eyebrow"><span /> Climate scientist</p>
           <h1>Zhi-Bo Li</h1>
           <p className="hero-role">Climate dynamics · Extreme climate · Wind and energy · Paleoclimate</p>
           <p className="intro">I am a climate scientist studying the connections between near-surface winds, sea-level change and extreme weather. I also investigate deep-time paleoclimate, global monsoons, atmospheric teleconnections and aridity using observations and climate-model simulations. International collaboration is always welcome.</p>
@@ -89,17 +89,17 @@ export default function Home() {
       <section className="featured-section" id="publications">
         <div className="featured-bar"><p className="eyebrow"><span /> Featured research</p><a href="/publications.html">View all 41 publications ↗</a></div>
         <ol className="featured-list">
-          {featuredResearch.map((paper, index) => <li key={paper.doi}><span>{String(index + 1).padStart(2, '0')}</span><small>{paper.year}</small><p><PublicationCitation text={paper.citation} links={paper.links} /></p><a href={paper.doi ?? '#'} target="_blank" rel="noreferrer" aria-label="Open this featured paper on the journal website">↗</a></li>)}
+          {featuredResearch.map((paper, index) => <li key={paper.doi}><span>{String(index + 1).padStart(2, '0')}</span><small>{paper.year}</small><PublicationLines paper={paper} /><PublicationHighlights paper={paper} /></li>)}
         </ol>
       </section>
 
-      <section className="network-section" id="network">
-        <div className="network-heading">
-          <p className="eyebrow"><span /> Academic network</p>
-          <h2>Science travels<br />across borders.</h2>
-        </div>
-        <CollaborationMap />
-      </section>
+      <div className="map-columns">
+        <section className="network-section" id="network" aria-labelledby="network-heading">
+          <div className="map-heading"><p className="eyebrow" id="network-heading"><span /> Academic network</p></div>
+          <CollaborationMap />
+        </section>
+        <VisitorStats />
+      </div>
 
       <section className="experience-section" id="experience">
         <div className="experience-heading"><p className="eyebrow"><span /> Experience</p></div>
@@ -109,11 +109,9 @@ export default function Home() {
           ))}
         </div>
         <aside className="activity-sections" aria-label="Editorship, projects, community and teaching">
-          {activities.map((group) => <section className="activity-section" key={group.label}><h3>{group.label}</h3><div className="activity-list">{group.items.map((item) => <article key={`${item.date}-${item.role}-${item.detail}`}><small>{item.date}</small><strong>{item.role}</strong><p>{item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.detail} ↗</a> : item.detail}</p></article>)}</div></section>)}
+          {activities.map((group) => <section className="activity-section" key={group.label}><h3>{group.label}</h3><div className="activity-list">{group.items.map((item) => <article className={'funding' in item ? 'has-funding' : undefined} key={`${item.date}-${item.role}-${item.detail}`}><small>{item.date}</small><strong>{item.role}</strong><p>{item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.detail} ↗</a> : item.detail}</p>{'funding' in item ? <span className="project-funding">{item.funding}</span> : null}</article>)}</div></section>)}
         </aside>
       </section>
-
-      <VisitorStats />
 
       <footer>
         <div><p className="eyebrow"><span /> Contact</p></div>

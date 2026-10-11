@@ -1,6 +1,8 @@
 'use client';
 
-import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react';
+import { useMemo, useState } from 'react';
+import MapFrame from './map-frame';
+import type * as GeoJSON from 'geojson';
 import { geoNaturalEarth1, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import world from '@d3-maps/atlas/world/countries/countries-110m';
@@ -32,85 +34,22 @@ function countryColor(weight?: number) {
 
 export default function CollaborationMap() {
   const [activeId, setActiveId] = useState('CHN');
-  const [view, setView] = useState({ scale: 1, x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const drag = useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number } | null>(null);
   const countries = useMemo(() => {
     const collection = feature(world as never, (world as never as { objects: { features: never } }).objects.features);
     return (collection as unknown as GeoJSON.FeatureCollection).features as CountryFeature[];
   }, []);
   const paths = useMemo(() => {
     const collection: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: countries };
-    const projection = geoNaturalEarth1().fitExtent([[14, 18], [946, 476]], collection);
+    const projection = geoNaturalEarth1().fitExtent([[14, 18], [946, 462]], collection);
     const path = geoPath(projection);
     return countries.map((country) => ({ country, d: path(country) ?? '' }));
   }, [countries]);
   const active = collaborationData[activeId];
 
-  const clampView = (scale: number, x: number, y: number) => ({
-    scale,
-    x: Math.min(0, Math.max(960 * (1 - scale), x)),
-    y: Math.min(0, Math.max(500 * (1 - scale), y)),
-  });
-
-  const zoomTo = (nextScale: number, anchorX = 480, anchorY = 250) => {
-    setView((current) => {
-      const scale = Math.min(5, Math.max(1, nextScale));
-      if (scale === 1) return { scale: 1, x: 0, y: 0 };
-      const factor = scale / current.scale;
-      return clampView(scale, anchorX - (anchorX - current.x) * factor, anchorY - (anchorY - current.y) * factor);
-    });
-  };
-
-  const handleWheel = (event: ReactWheelEvent<SVGSVGElement>) => {
-    event.preventDefault();
-    const rect = event.currentTarget.getBoundingClientRect();
-    const anchorX = ((event.clientX - rect.left) / rect.width) * 960;
-    const anchorY = ((event.clientY - rect.top) / rect.height) * 500;
-    zoomTo(view.scale * (event.deltaY < 0 ? 1.22 : 0.82), anchorX, anchorY);
-  };
-
-  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: view.x, originY: view.y };
-    setDragging(true);
-  };
-
-  const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (!drag.current || drag.current.pointerId !== event.pointerId || view.scale === 1) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = drag.current.originX + ((event.clientX - drag.current.startX) / rect.width) * 960;
-    const y = drag.current.originY + ((event.clientY - drag.current.startY) / rect.height) * 500;
-    setView(clampView(view.scale, x, y));
-  };
-
-  const stopDragging = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (drag.current?.pointerId === event.pointerId) drag.current = null;
-    setDragging(false);
-  };
-
   return (
     <div className="network-map-wrap">
-      <div className="map-controls" aria-label="Academic network map controls">
-        <button type="button" onClick={() => zoomTo(view.scale * 1.35)} aria-label="Zoom in">+</button>
-        <button type="button" onClick={() => zoomTo(view.scale / 1.35)} aria-label="Zoom out">−</button>
-        <button type="button" className="map-reset" onClick={() => setView({ scale: 1, x: 0, y: 0 })}>Reset</button>
-      </div>
-      <svg
-        className={`network-map ${dragging ? 'is-dragging' : ''}`}
-        viewBox="0 0 960 500"
-        role="img"
-        aria-labelledby="network-map-title network-map-desc"
-        onWheel={handleWheel}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={stopDragging}
-        onPointerCancel={stopDragging}
-      >
-        <title id="network-map-title">World map of Zhi-Bo Li&apos;s academic collaborations</title>
-        <desc id="network-map-desc">Interactive world map. Use the controls or mouse wheel to zoom, then drag to move around the map.</desc>
-        <g transform={`translate(${view.x} ${view.y}) scale(${view.scale})`}>
-          <path className="map-sphere" vectorEffect="non-scaling-stroke" d={geoPath(geoNaturalEarth1().fitExtent([[14, 18], [946, 476]], { type: 'Sphere' }))({ type: 'Sphere' }) ?? ''} />
+      <MapFrame label="Academic network map">
+        <path className="map-sphere" vectorEffect="non-scaling-stroke" d={geoPath(geoNaturalEarth1().fitExtent([[14, 18], [946, 462]], { type: 'Sphere' }))({ type: 'Sphere' }) ?? ''} />
           {paths.map(({ country, d }) => {
             const id = country.properties.id;
             const data = collaborationData[id];
@@ -128,8 +67,7 @@ export default function CollaborationMap() {
               />
             );
           })}
-        </g>
-      </svg>
+      </MapFrame>
       <div className="map-detail" aria-live="polite">
         <small>{active.level}</small>
         <strong>{active.country}</strong>

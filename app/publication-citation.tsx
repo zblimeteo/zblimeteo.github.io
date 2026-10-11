@@ -1,5 +1,5 @@
 export type MediaLink = { label: string; url: string };
-export type Publication = { year: string; citation: string; doi: string | null; altmetric?: number; links?: MediaLink[] };
+export type Publication = { year: string; citation: string; doi: string | null; altmetric?: number; links?: MediaLink[]; authors: string; title: string; journal: string; details: string; annotations: string[]; firstAuthor: boolean; correspondingAuthor: boolean };
 
 const supervisedStudents = [
   'You Wu',
@@ -45,4 +45,17 @@ export function PublicationCitation({ text, links = [] }: { text: string; links?
     }
     return <span key={`${piece.slice(0, 12)}-${index}`}>{piece}</span>;
   })}</>;
+}
+
+export function PublicationLines({ paper }: { paper: Publication }) {
+  return <div className="publication-lines">
+    <p className="publication-authors"><PublicationCitation text={paper.authors} /></p>
+    <p className="publication-title">{paper.title}</p>
+    <p className="publication-journal"><b className="journal-name">{paper.journal}</b>, {paper.details}</p>
+    {paper.annotations.length ? <p className="publication-annotations">{paper.annotations.map(note => <span key={note}>{note}</span>)}</p> : null}
+  </div>;
+}
+
+export function PublicationHighlights({ paper }: { paper: Publication }) {
+  return <div className="publication-highlights">{paper.links?.map((link,index) => <a key={`${link.url}-${index}`} href={link.url} target="_blank" rel="noreferrer">{link.label} ↗</a>)}</div>;
 }

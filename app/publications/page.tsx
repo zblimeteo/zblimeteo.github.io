@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import { doiIdentifier, PublicationCitation, type Publication } from '../publication-citation';
+import { doiIdentifier, PublicationLines, PublicationHighlights, type Publication } from '../publication-citation';
 import publications from './publications.json';
 
 export const dynamic = 'force-static';
@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 
 export default function PublicationsPage() {
   const records = publications as Publication[];
+  const leading = records.filter(paper => paper.firstAuthor || paper.correspondingAuthor).length;
   const years = [...new Set(records.map((publication) => publication.year))];
 
   return (
@@ -30,9 +31,12 @@ export default function PublicationsPage() {
         <a className="contact-link" href="mailto:zhi-bo.li@gu.se">Let&apos;s talk ↗</a>
       </header>
 
-      <section className="publication-page-hero">
-        <div><p className="eyebrow"><span /> Complete record</p><h1>Publications.</h1></div>
-        <div className="publication-overview"><strong>{records.length}</strong><span>Peer-reviewed papers</span><p>Climate dynamics · Extreme climate · Wind speed · Renewable energy · Paleoclimate · Monsoon</p></div>
+      <section className="publication-page-hero" aria-label="Publication overview">
+        <h1 className="sr-only">Publications</h1>
+        <div className="publication-overview">
+          <div className="publication-totals"><p><strong>{records.length}</strong><span>Peer-reviewed papers</span></p><p><strong>{leading}</strong><span>Leading author papers<small>First or corresponding author</small></span></p></div>
+          <p>Climate dynamics · Extreme climate · Wind speed · Renewable energy · Paleoclimate · Monsoon</p>
+        </div>
       </section>
 
       <section className="publication-key">
@@ -50,9 +54,9 @@ export default function PublicationsPage() {
                 {group.map((publication, index) => (
                   <li className="publication-record" key={`${publication.doi}-${index}`}>
                     <span className="publication-number">{String(index + 1).padStart(2, '0')}</span>
-                    <p><PublicationCitation text={publication.citation} links={publication.links} /></p>
+                    <PublicationLines paper={publication} />
                     <div className="publication-actions">
-                      {publication.doi ? <a className="journal-link" href={publication.doi} target="_blank" rel="noreferrer" aria-label="Open this article on the journal website" title="Open on the journal website"><span className="link-glyph" aria-hidden="true" /></a> : null}
+                      <PublicationHighlights paper={publication} />
                       {publication.doi ? <div
                         className="altmetric-embed"
                         data-badge-type="donut"
