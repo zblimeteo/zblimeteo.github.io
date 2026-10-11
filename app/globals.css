@@ -437,9 +437,13 @@ footer .eyebrow span { background:var(--acid); }
   grid-template-columns:var(--record-date) var(--record-role) minmax(0,1fr) 120px;
   column-gap:var(--record-gap);
   align-items:start;
+  padding:24px 0;
 }
-.home-page .timeline-row>p { margin:0; }
-.home-page .timeline-row>h3 { margin:0; min-width:0; font:400 29px/1.3 Georgia,serif; }
+.home-page .experience-heading { margin-bottom:30px; }
+.home-page .timeline { border-top:1px solid var(--line); }
+.home-page .timeline-row>p { margin:0; letter-spacing:.01em; }
+.home-page .timeline-row>h3 { margin:0; min-width:0; color:#111; font:700 18px/1.5 Arial,sans-serif; }
+.home-page .experience-detail strong,.home-page .experience-links { color:#111; font:700 18px/1.5 Arial,sans-serif; }
 .home-page .experience-detail { grid-column:3; min-width:0; }
 .home-page .activity-list,
 .home-page .research-projects .activity-list { max-width:none; padding:0; }
@@ -480,5 +484,5 @@ footer .eyebrow span { background:var(--acid); }
     gap:12px;
   }
   .home-page .activity-list article>p,.home-page .project-funding,.home-page .experience-detail { grid-column:1; }
-  .home-page .activity-list article>small { font-size:17px; }
+  .home-page .timeline-row>p,.home-page .activity-list article>small { font-size:17px; }
 }
