@@ -6,6 +6,7 @@ import { feature } from 'topojson-client';
 import world from '@d3-maps/atlas/world/countries/countries-110m';
 import type { VisitorLocation, VisitorSnapshot } from '../db/visitor-stats';
 import { traceCountry } from '../db/visitor-geolocation';
+import { readVisitorSnapshot, validSavedSnapshot, type SavedVisitorSnapshot } from '../db/visitor-client';
 import MapFrame from './map-frame';
 import type * as GeoJSON from 'geojson';
 
@@ -70,10 +71,17 @@ function VisitorWorldMap({ locations }: { locations: VisitorLocation[] }) {
 
 export default function VisitorStats() {
   const [snapshot, setSnapshot] = useState<VisitorSnapshot>(emptySnapshot);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'saved' | 'unavailable'>('loading');
+  const [savedAt, setSavedAt] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    let refreshing: Promise<void> | undefined;
+    let live = false;
+    let saved: SavedVisitorSnapshot | undefined;
     const url = new URL(window.location.href);
     const endpoint = window.location.hostname === 'zblimeteo.github.io'
       ? 'https://zhi-bo-li-climate.zbli-meteo.chatgpt.site/api/visit' : '/api/visit';
@@ -84,44 +92,73 @@ export default function VisitorStats() {
     const recordedAt = Number(storageGet('zb-visit-recorded-at') ?? 0);
     const recent = recordedAt > 0 && Date.now() - recordedAt < 86400000;
 
-    async function getSnapshot() {
-      const response = await fetch(endpoint, { mode: 'cors', credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(10000) });
-      if (!response.ok) throw new Error('Visitor statistics unavailable');
-      const data = await response.json() as VisitorSnapshot;
-      if (!cancelled) { setSnapshot(data); setStatus('ready'); }
+    function showSaved(value: unknown) {
+      if (cancelled || live || !validSavedSnapshot(value)) return;
+      if (saved && Date.parse(saved.capturedAt) >= Date.parse(value.capturedAt)) return;
+      saved = value;
+      setSnapshot(value.snapshot); setSavedAt(value.capturedAt); setStatus('saved');
     }
+    function showLive(data: VisitorSnapshot) {
+      if (cancelled) return;
+      live = true;
+      saved = { capturedAt: new Date().toISOString(), snapshot: data };
+      storageSet('zb-visitor-snapshot', JSON.stringify(saved));
+      setSnapshot(data); setSavedAt(saved.capturedAt); setStatus('ready');
+    }
+    function refresh() {
+      if (refreshing || cancelled) return refreshing ?? Promise.resolve();
+      clearTimeout(retryTimer);
+      refreshing = readVisitorSnapshot(endpoint, controller.signal).then(showLive).catch(() => {
+        if (cancelled) return;
+        live = false;
+        setStatus(saved ? 'saved' : 'unavailable');
+        retryTimer = setTimeout(() => { void refresh(); }, 30000);
+      }).finally(() => { refreshing = undefined; });
+      return refreshing;
+    }
+    try { showSaved(JSON.parse(storageGet('zb-visitor-snapshot') ?? 'null')); } catch { /* Ignore invalid browser cache. */ }
+    // A dated, real aggregate keeps the map useful if the cross-origin backend is unreachable.
+    void fetch('/visitor-snapshot.json', { cache: 'no-cache', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]) })
+      .then(response => response.ok ? response.json() : null).then(showSaved).catch(() => {});
     async function load() {
-      const reading = getSnapshot().catch(() => { if (!cancelled) setStatus('unavailable'); });
+      const reading = refresh();
       if (!excluded && !recent) {
         let visitorId = storageGet('zb-visitor-id');
         if (!visitorId) { visitorId = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`; storageSet('zb-visitor-id',visitorId); }
         const countryCode = await browserCountry(endpoint);
+        if (cancelled) return;
         try {
-          const response = await fetch(endpoint, {
-            method: 'POST', mode: 'cors', credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(10000),
+          // Reuse the same browser ID for every retry; INSERT OR IGNORE prevents duplicates.
+          const data = await readVisitorSnapshot(endpoint, controller.signal, fetch, undefined, {
+            method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ visitorId, path: window.location.pathname, countryCode, countrySource: 'site_edge_trace' }),
           });
-          if (!response.ok) throw new Error('Visit recording unavailable');
-          const data = await response.json() as VisitorSnapshot;
           storageSet('zb-visit-recorded-at',String(Date.now()));
           await reading;
-          if (!cancelled) { setSnapshot(data); setStatus('ready'); }
+          showLive(data);
         } catch { await reading; }
       } else await reading;
     }
+    const online = () => { void refresh(); };
+    const visible = () => { if (document.visibilityState === 'visible') void refresh(); };
+    window.addEventListener('online', online);
+    document.addEventListener('visibilitychange', visible);
     void load();
-    return () => { cancelled = true; };
-  }, []);
+    return () => { cancelled = true; controller.abort(); clearTimeout(retryTimer); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', visible); };
+  }, [reloadKey]);
 
   return <section className="visitor-section" aria-labelledby="visitor-heading">
-    <div className="map-heading visitor-heading"><p className="eyebrow" id="visitor-heading"><span /> Visitors</p><p className="visitor-count"><strong>{status === 'ready' ? snapshot.total.toLocaleString('en-US') : '—'}</strong><span>Recorded visitors</span></p></div>
+    <div className="map-heading visitor-heading"><p className="eyebrow" id="visitor-heading"><span /> Visitors</p><p className="visitor-count" aria-live="polite"><strong>{status === 'ready' || status === 'saved' ? snapshot.total.toLocaleString('en-US') : '—'}</strong><span>Recorded visitors</span></p></div>
     <div className="visitor-layout">
       <VisitorWorldMap locations={snapshot.locations} />
-      <aside className="visitor-breakdown" aria-label="Visitors by country" tabIndex={0}>
+      <aside className="visitor-breakdown" aria-label="Visitors by country">
         <p>Countries</p>
-        {status === 'ready' ? <ul>{snapshot.locations.map(location => <li key={location.countryCode || 'unknown'}><span>{location.country}</span><strong>{location.visits}</strong></li>)}</ul> : <p className="visitor-status">{status === 'loading' ? 'Loading…' : 'Statistics temporarily unavailable'}</p>}
+        <div className="visitor-country-scroll" tabIndex={0} role="region" aria-label="Country counts">
+          {status === 'ready' || status === 'saved' ? <ul>{snapshot.locations.map(location => <li key={location.countryCode || 'unknown'}><span>{location.country}</span><strong>{location.visits}</strong></li>)}</ul> : <p className="visitor-status">{status === 'loading' ? 'Loading…' : 'Statistics temporarily unavailable'}</p>}
+        </div>
       </aside>
     </div>
+    {status === 'saved' || status === 'unavailable' ? <p className="visitor-note">{status === 'saved' ? `Last available count · ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(new Date(savedAt))} UTC` : 'Unable to connect to visitor statistics.'} <button className="visitor-retry" type="button" onClick={() => setReloadKey(key => key + 1)}>Retry</button></p> : null}
   </section>;
 }

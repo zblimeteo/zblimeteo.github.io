@@ -1,0 +1,80 @@
+{
+  "capturedAt": "2026-10-27T09:03:26.7527318Z",
+  "snapshot": {
+    "total": 47,
+    "locations": [
+      {
+        "countryCode": "US",
+        "country": "United States",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 25
+      },
+      {
+        "countryCode": "SE",
+        "country": "Sweden",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 10
+      },
+      {
+        "countryCode": "DE",
+        "country": "Germany",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 3
+      },
+      {
+        "countryCode": "BE",
+        "country": "Belgium",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 2
+      },
+      {
+        "countryCode": "JP",
+        "country": "Japan",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 2
+      },
+      {
+        "countryCode": "GB",
+        "country": "United Kingdom",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 2
+      },
+      {
+        "countryCode": "CA",
+        "country": "Canada",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 1
+      },
+      {
+        "countryCode": "NL",
+        "country": "Netherlands",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 1
+      },
+      {
+        "countryCode": "",
+        "country": "Unknown location",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 1
+      }
+    ]
+  }
+}

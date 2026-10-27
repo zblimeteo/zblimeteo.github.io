@@ -458,6 +458,17 @@ footer .eyebrow span { background:var(--acid); }
 .home-page .activity-list article>p { min-width:0; margin:0; line-height:1.5; }
 .home-page .activity-list article>p { grid-column:3; }
 .home-page .project-funding { grid-column:4; padding:0; text-align:left; }
+.project-funder { display:block; margin-top:6px; font-weight:600; }
+.home-page .selected-awards article>strong { grid-column:2/-1; }
+.visitor-layout { align-items:stretch; }
+.visitor-breakdown { position:relative; min-height:0; max-height:none; overflow:hidden; scrollbar-gutter:auto; }
+.visitor-country-scroll { position:absolute; inset:44px 12px 12px; overflow-y:auto; scrollbar-gutter:stable; overscroll-behavior:contain; }
+.visitor-country-scroll:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+.visitor-status { margin:0; font-size:14px; line-height:1.5; }
+.visitor-retry { border:0; border-bottom:1px solid currentColor; padding:0; margin-left:6px; background:transparent; color:var(--blue); font:700 12px/1.6 Arial,sans-serif; cursor:pointer; }
+@media(max-width:560px) {
+  .visitor-breakdown { min-height:180px; }
+}
 @media(max-width:1499px) {
   .home-page { --record-date:230px; --record-role:390px; --record-gap:24px; }
   .home-page .timeline-row,
@@ -485,4 +496,5 @@ footer .eyebrow span { background:var(--acid); }
   }
   .home-page .activity-list article>p,.home-page .project-funding,.home-page .experience-detail { grid-column:1; }
   .home-page .timeline-row>p,.home-page .activity-list article>small { font-size:17px; }
+  .home-page .selected-awards article>strong { grid-column:1; }
 }
