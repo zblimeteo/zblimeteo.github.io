@@ -5,8 +5,9 @@ import { geoCentroid, geoNaturalEarth1, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import world from '@d3-maps/atlas/world/countries/countries-110m';
 import type { VisitorLocation, VisitorSnapshot } from '../db/visitor-stats';
-import { traceCountry } from '../db/visitor-geolocation';
+import { readBrowserCountry, knownAutomation } from '../db/visitor-geolocation';
 import { readVisitorSnapshot, validSavedSnapshot, type SavedVisitorSnapshot } from '../db/visitor-client';
+import { visitorIdentity } from '../db/visitor-identity';
 import MapFrame from './map-frame';
 import type * as GeoJSON from 'geojson';
 
@@ -22,15 +23,6 @@ function storageSet(key: string, value: string) {
   try { window.localStorage.setItem(key, value); } catch { /* Continue even with restricted storage. */ }
   try { window.sessionStorage.setItem(key, value); } catch { /* Cookies are an additional fallback. */ }
   try { document.cookie = `${key}=${value}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`; } catch { /* Never interrupt visitor counts. */ }
-}
-
-async function browserCountry(apiEndpoint: string) {
-  try {
-    // This is the existing visitor backend origin, not a new geolocation provider.
-    const visitorOrigin = new URL(apiEndpoint, window.location.href).origin;
-    const response = await fetch(`${visitorOrigin}/cdn-cgi/trace`, { credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(4500) });
-    return response.ok ? traceCountry(await response.text()) : '';
-  } catch { return ''; }
 }
 
 function VisitorWorldMap({ locations }: { locations: VisitorLocation[] }) {
@@ -79,7 +71,9 @@ export default function VisitorStats() {
     let cancelled = false;
     const controller = new AbortController();
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    let registrationTimer: ReturnType<typeof setTimeout> | undefined;
     let refreshing: Promise<void> | undefined;
+    let registering: Promise<void> | undefined;
     let live = false;
     let saved: SavedVisitorSnapshot | undefined;
     const url = new URL(window.location.href);
@@ -88,9 +82,7 @@ export default function VisitorStats() {
     const ownerRequested = url.searchParams.get('owner') === '1';
     if (ownerRequested) storageSet('zb-owner-visitor-excluded','1');
     const preview = ['localhost','127.0.0.1'].includes(window.location.hostname) || window.location.hostname.endsWith('.chatgpt.site');
-    const excluded = preview || ownerRequested || storageGet('zb-owner-visitor-excluded') === '1';
-    const recordedAt = Number(storageGet('zb-visit-recorded-at') ?? 0);
-    const recent = recordedAt > 0 && Date.now() - recordedAt < 86400000;
+    const excluded = preview || ownerRequested || storageGet('zb-owner-visitor-excluded') === '1' || knownAutomation(navigator.userAgent, navigator.webdriver);
 
     function showSaved(value: unknown) {
       if (cancelled || live || !validSavedSnapshot(value)) return;
@@ -120,14 +112,19 @@ export default function VisitorStats() {
     // A dated, real aggregate keeps the map useful if the cross-origin backend is unreachable.
     void fetch('/visitor-snapshot.json', { cache: 'no-cache', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]) })
       .then(response => response.ok ? response.json() : null).then(showSaved).catch(() => {});
-    async function load() {
-      const reading = refresh();
-      if (!excluded && !recent) {
-        let visitorId = storageGet('zb-visitor-id');
-        if (!visitorId) { visitorId = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`; storageSet('zb-visitor-id',visitorId); }
-        const countryCode = await browserCountry(endpoint);
+    function register() {
+      if (excluded || cancelled) return Promise.resolve();
+      if (registering) return registering;
+      clearTimeout(registrationTimer);
+      registering = (async () => {
+        const visitorId = await visitorIdentity();
+        if (cancelled || !visitorId) return;
+        // Lifetime registration, rather than a daily counter. Existing profiles
+        // confirm their ID once after this upgrade and never create another row.
+        if (storageGet('zb-visitor-registered-id') === visitorId && storageGet('zb-visitor-country-status') === 'known') return;
+        const origin = new URL(endpoint, window.location.href).origin;
+        const countryCode = await readBrowserCountry(`${origin}/cdn-cgi/trace`, controller.signal);
         if (cancelled) return;
-        try {
           // Reuse the same browser ID for every retry; INSERT OR IGNORE prevents duplicates.
           const data = await readVisitorSnapshot(endpoint, controller.signal, fetch, undefined, {
             method: 'POST',
@@ -135,21 +132,27 @@ export default function VisitorStats() {
             body: JSON.stringify({ visitorId, path: window.location.pathname, countryCode, countrySource: 'site_edge_trace' }),
           });
           storageSet('zb-visit-recorded-at',String(Date.now()));
-          await reading;
+          storageSet('zb-visitor-registered-id', visitorId);
+          storageSet('zb-visitor-country-status', countryCode ? 'known' : 'unknown');
+          await refreshing;
           showLive(data);
-        } catch { await reading; }
-      } else await reading;
+          if (!countryCode) registrationTimer = setTimeout(() => { void register(); }, 60000);
+      })().catch(() => {
+        if (!cancelled) registrationTimer = setTimeout(() => { void register(); }, 30000);
+      }).finally(() => { registering = undefined; });
+      return registering;
     }
-    const online = () => { void refresh(); };
-    const visible = () => { if (document.visibilityState === 'visible') void refresh(); };
+    const load = () => { void refresh(); void register(); };
+    const online = () => load();
+    const visible = () => { if (document.visibilityState === 'visible') load(); };
     window.addEventListener('online', online);
     document.addEventListener('visibilitychange', visible);
-    void load();
-    return () => { cancelled = true; controller.abort(); clearTimeout(retryTimer); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', visible); };
+    load();
+    return () => { cancelled = true; controller.abort(); clearTimeout(retryTimer); clearTimeout(registrationTimer); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', visible); };
   }, [reloadKey]);
 
   return <section className="visitor-section" aria-labelledby="visitor-heading">
-    <div className="map-heading visitor-heading"><p className="eyebrow" id="visitor-heading"><span /> Visitors</p><p className="visitor-count" aria-live="polite"><strong>{status === 'ready' || status === 'saved' ? snapshot.total.toLocaleString('en-US') : '—'}</strong><span>Recorded visitors</span></p></div>
+    <div className="map-heading visitor-heading"><p className="eyebrow" id="visitor-heading"><span /> Visitors</p><p className="visitor-count" aria-live="polite" title="Unique browser profiles; country is the first successfully recorded network exit."><strong>{status === 'ready' || status === 'saved' ? snapshot.total.toLocaleString('en-US') : '—'}</strong><span>Recorded visitors</span></p></div>
     <div className="visitor-layout">
       <VisitorWorldMap locations={snapshot.locations} />
       <aside className="visitor-breakdown" aria-label="Visitors by country">

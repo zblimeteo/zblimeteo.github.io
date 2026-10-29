@@ -1,7 +1,7 @@
 import { env } from 'cloudflare:workers';
 import type { D1Database } from '@cloudflare/workers-types';
 import { getVisitorSnapshot, recordVisit } from '../../../db/visitor-stats';
-import { countryName, resolveVisitorCountry } from '../../../db/visitor-geolocation';
+import { countryName, resolveVisitorCountry, knownAutomation } from '../../../db/visitor-geolocation';
 
 type GeoRequest = Request & {
   cf?: { country?: string; city?: string; latitude?: string; longitude?: string };
@@ -36,7 +36,7 @@ export function OPTIONS() {
 
 export async function POST(request: GeoRequest) {
   const db = database();
-  if (request.headers.get('origin') !== publicSiteOrigin) {
+  if (request.headers.get('origin') !== publicSiteOrigin || knownAutomation(request.headers.get('user-agent') ?? '')) {
     return json(await getVisitorSnapshot(db));
   }
   const hostname = new URL(request.url).hostname;

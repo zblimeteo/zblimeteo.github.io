@@ -1,7 +1,7 @@
 {
-  "capturedAt": "2026-10-27T09:03:26.7527318Z",
+  "capturedAt": "2026-10-29T08:47:31.3515280Z",
   "snapshot": {
-    "total": 47,
+    "total": 52,
     "locations": [
       {
         "countryCode": "US",
@@ -9,7 +9,7 @@
         "city": "",
         "latitude": null,
         "longitude": null,
-        "visits": 25
+        "visits": 28
       },
       {
         "countryCode": "SE",
@@ -60,8 +60,24 @@
         "visits": 1
       },
       {
+        "countryCode": "IL",
+        "country": "Israel",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 1
+      },
+      {
         "countryCode": "NL",
         "country": "Netherlands",
+        "city": "",
+        "latitude": null,
+        "longitude": null,
+        "visits": 1
+      },
+      {
+        "countryCode": "NZ",
+        "country": "New Zealand",
         "city": "",
         "latitude": null,
         "longitude": null,

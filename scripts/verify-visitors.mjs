@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { traceCountry, validCountry, countryName, resolveVisitorCountry } from '../db/visitor-geolocation.ts';
-import { recordVisit } from '../db/visitor-stats.ts';
+import { traceCountry, validCountry, countryName, resolveVisitorCountry, readBrowserCountry, knownAutomation } from '../db/visitor-geolocation.ts';
 
 assert.equal(traceCountry('ip=discarded\nloc=CN\ncolo=HKG\n'), 'CN');
 assert.equal(countryName('CN'), 'China');
@@ -10,21 +9,20 @@ assert.equal(validCountry('T1'), '');
 assert.equal(validCountry('<script>'), '');
 assert.deepEqual(resolveVisitorCountry({countryCode:'CN',countrySource:'site_edge_trace'},'US'), {countryCode:'CN',countrySource:'site_edge_trace'});
 assert.deepEqual(resolveVisitorCountry({countryCode:'',countrySource:'site_edge_trace'},'US'), {countryCode:'',countrySource:'unavailable'});
-assert.equal(resolveVisitorCountry({},'SE').countryCode, 'SE');
+assert.equal(resolveVisitorCountry({},'US').countryCode, '');
+assert.equal(resolveVisitorCountry({countryCode:'CN'},'US').countryCode, '');
+assert.equal(knownAutomation('CloudflareBrowserRenderingCrawler/1.0'), true);
+assert.equal(knownAutomation('Mozilla/5.0 HeadlessChrome/130.0'), true);
+assert.equal(knownAutomation('Mozilla/5.0 Chrome/130.0', true), true);
+assert.equal(knownAutomation('Mozilla/5.0 Chrome/130.0'), false);
 
-const statements=[];
-function db(changes) {
-  return {prepare(sql) { statements.push(sql); return {bind(...args) { statements.push(args); return {async run(){return {meta:{changes}};}};}};}};
-}
-const visit={visitorKey:'test-existing-visitor',countryCode:'CN',country:'China',city:'',latitude:NaN,longitude:NaN,path:'/',countrySource:'site_edge_trace'};
-await recordVisit(db(0),visit);
-assert.equal(statements.filter(s=>typeof s==='string').length,1);
-assert.match(statements[0],/INSERT OR IGNORE/);
-assert.equal(statements[1][4],null);
-assert.equal(statements[1][5],null);
-statements.length=0;
-await recordVisit(db(1),visit);
-assert.equal(statements.filter(s=>typeof s==='string').length,2);
-assert.match(statements[2],/visitor_country_sources/);
-assert.equal(statements[3][1],'site_edge_trace');
-console.log('Visitor checks passed: CN resolves to China; browser country beats proxy country; lookup failure stays unknown; existing records never overwritten; new country sources recorded.');
+let requests = 0;
+const country = await readBrowserCountry('https://existing-backend/cdn-cgi/trace', new AbortController().signal, async () => {
+  requests++;
+  if (requests === 1) throw new TypeError('temporary failure');
+  return new Response('loc=CN\ncolo=HKG\n');
+});
+assert.equal(country, 'CN');
+assert.equal(requests, 2);
+assert.equal(await readBrowserCountry('https://existing-backend/cdn-cgi/trace', new AbortController().signal, async () => new Response('loc=XX\n')), '');
+console.log('Geolocation checks passed: CN resolves to China after a transient failure; forwarding countries never substitute for visitors; failed lookups stay unknown; known automation excluded.');

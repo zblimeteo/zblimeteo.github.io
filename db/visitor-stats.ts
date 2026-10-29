@@ -12,7 +12,7 @@ export type VisitorLocation = {
 export type VisitorSnapshot = { total: number; locations: VisitorLocation[] };
 
 export async function recordVisit(db: D1Database, visit: Omit<VisitorLocation, 'visits'> & { path: string; visitorKey: string; countrySource: string }) {
-  const result = await db.prepare(`
+  await db.batch([db.prepare(`
     INSERT OR IGNORE INTO unique_visitors_v3
       (visitor_key, country_code, country, city, latitude, longitude, path)
     VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -24,11 +24,20 @@ export async function recordVisit(db: D1Database, visit: Omit<VisitorLocation, '
     typeof visit.latitude === 'number' && Number.isFinite(visit.latitude) ? visit.latitude : null,
     typeof visit.longitude === 'number' && Number.isFinite(visit.longitude) ? visit.longitude : null,
     visit.path,
-  ).run();
-  if (result.meta.changes > 0) {
-    await db.prepare('INSERT OR IGNORE INTO visitor_country_sources (visitor_key, source) VALUES (?, ?)')
-      .bind(visit.visitorKey, visit.countrySource).run();
-  }
+  ),
+    // changes() refers to the preceding statement within this atomic batch.
+    db.prepare(`INSERT OR IGNORE INTO visitor_country_sources (visitor_key, source)
+      SELECT ?, ? WHERE changes() > 0`).bind(visit.visitorKey, visit.countrySource),
+    // A failed first lookup can be completed later without creating a new visitor.
+    // Known countries are immutable: changing VPN exits never creates extra people.
+    db.prepare(`UPDATE unique_visitors_v3 SET country_code = ?, country = ?
+      WHERE visitor_key = ? AND COALESCE(country_code, '') = '' AND ? <> ''`)
+      .bind(visit.countryCode, visit.country, visit.visitorKey, visit.countryCode),
+    db.prepare(`INSERT INTO visitor_country_sources (visitor_key, source)
+      SELECT ?, ? WHERE changes() > 0
+      ON CONFLICT(visitor_key) DO UPDATE SET source = excluded.source, recorded_at = CURRENT_TIMESTAMP`)
+      .bind(visit.visitorKey, visit.countrySource),
+  ]);
 }
 
 export async function getVisitorSnapshot(db: D1Database): Promise<VisitorSnapshot> {
