@@ -31,8 +31,8 @@ const activities: Array<{ label: string; items: Array<{ date: string; role: stri
   {
     label: 'Research projects',
     items: [
-      { date: '2026—2027', role: 'Principal Investigator', funder: 'Helge Ax:son Johnsons Foundation', funding: 'SEK 50,000', detail: 'Extratropical cyclone clustering and extreme sea level around the North Sea' },
-      { date: '2026—2027', role: 'Principal Investigator', funder: 'Stiftelsen Lars Hiertas Minne', funding: 'SEK 40,000', detail: 'Cyclone clustering and extreme sea level along the Nordic coast' },
+      { date: '2026—2027', role: 'PI', funder: 'Helge Ax:son Johnsons Foundation', funding: 'SEK 50,000', detail: 'Extratropical cyclone clustering and extreme sea level around the North Sea' },
+      { date: '2026—2027', role: 'PI', funder: 'Stiftelsen Lars Hiertas Minne', funding: 'SEK 40,000', detail: 'Cyclone clustering and extreme sea level along the Nordic coast' },
       { date: '2024—2026', role: 'Main participant', funder: 'Formas', detail: 'Impact of climate variation and change on offshore wind energy potential' },
       { date: '2024—2025', role: 'Main participant', funder: 'Formas', detail: 'Northern European enclosure dam and protection from sea-level rise' },
       { date: '2020—2024', role: 'Participant', funder: 'NSFC', detail: 'Continental evolution and monsoon changes' },
@@ -77,10 +77,8 @@ export default function Home() {
 
       <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="section-title">Climate scientist</p>
           <h1>Zhi-Bo Li</h1>
-          <p className="hero-role">Climate dynamics · Extreme climate · Wind and energy · Paleoclimate</p>
-          <p className="intro">I am a climate scientist studying the connections between near-surface winds, sea-level change and extreme weather. I also investigate deep-time paleoclimate, global monsoons, atmospheric teleconnections and aridity using observations and climate-model simulations. International collaboration is always welcome.</p>
+          <p className="intro">I am a climate scientist studying the climate extremes and their social relevance. I also investigate near-surface wind speed and renewable wind energy, extratropical and tropical cyclones, paleoclimate modelling (CESM), Asian monsoons, aridity and drought, and atmospheric teleconnections. International collaboration is always welcome.</p>
           <div className="hero-actions">
             <a className="button primary" href="/publications.html">Browse publications <span>↗</span></a>
             <a className="button quiet" href="/Zhi-Bo-Li-CV.pdf" download>Download full CV (PDF) ↓</a>
@@ -89,7 +87,7 @@ export default function Home() {
         <div className="hero-profile">
           <figure className="portrait-card"><Image src="/prague-portrait.jpg" alt="Portrait of Zhi-Bo Li in Prague" width={1200} height={1200} priority /></figure>
           <div className="profile-details">
-            <p><span>Current position · from 1 September 2026</span><strong>Postdoctoral Researcher</strong><small>Uppsala University · Department of Earth Sciences</small></p>
+            <p><strong>Postdoctoral Researcher</strong><small>Uppsala University · Department of Earth Sciences</small></p>
           </div>
         </div>
       </section>
@@ -97,7 +95,7 @@ export default function Home() {
       <section className="featured-section" id="publications">
         <div className="featured-bar"><h2 className="section-title">Featured research</h2><a href="/publications.html">View all 41 publications ↗</a></div>
         <ol className="featured-list">
-          {featuredResearch.map((paper, index) => <li key={paper.doi}><span>{String(index + 1).padStart(2, '0')}</span><small>{paper.year}</small><PublicationLines paper={paper} showOfficialLink /><PublicationHighlights paper={paper} /></li>)}
+          {featuredResearch.map((paper) => <li key={paper.doi}><small>{paper.doi?.includes('2019EF001276') ? '2019' : paper.year}</small><PublicationLines paper={paper} showOfficialLink /><PublicationHighlights paper={paper} /></li>)}
         </ol>
       </section>
 

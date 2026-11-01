@@ -41,8 +41,7 @@ h2 { font:400 clamp(42px,5vw,74px)/.98 Georgia, serif; letter-spacing:-.05em; ma
 .featured-bar p { margin:0; }
 .featured-bar>a { flex:0 0 auto; font-size:14px; font-weight:700; border-bottom:1px solid; padding-bottom:4px; }
 .featured-list { list-style:none; margin:0; padding:0; }
-.featured-list li { display:grid; grid-template-columns:40px 90px minmax(0,1fr) 40px; gap:22px; padding:30px 0; border-bottom:1px solid var(--line); align-items:start; }
-.featured-list>li>span { padding-top:5px; color:#6b7974; font:14px monospace; }
+.featured-list li { display:grid; grid-template-columns:90px minmax(0,1fr) 40px; gap:22px; padding:30px 0; border-bottom:1px solid var(--line); align-items:start; }
 .featured-list>li>small { padding-top:4px; color:var(--blue); font-size:15px; font-weight:800; }
 .featured-list p { margin:0; max-width:1100px; font:17px/1.7 Georgia,serif; }
 .featured-list>li>a { display:grid; place-items:center; width:38px; height:38px; border:1px solid var(--line); color:var(--blue); font-size:21px; }
@@ -219,9 +218,9 @@ footer .eyebrow span { background:var(--acid); }
 
 /* Clearer research typography and compact, matching map panels. */
 .eyebrow { font-size:18px; letter-spacing:.08em; }
-.featured-list li { grid-template-columns:40px 72px minmax(0,1fr) 180px; gap:24px; }
-.featured-list>li>span,.publication-number { color:#34433e; font:17px/1.5 monospace; }
-.featured-list>li>small { font-size:18px; }
+.featured-list li { grid-template-columns:72px minmax(0,1fr) 180px; gap:24px; }
+.publication-number { color:#34433e; font:17px/1.5 monospace; }
+.featured-list>li>small { font-size:18px; grid-column:1; grid-row:auto; }
 .publication-lines { min-width:0; }
 .publication-lines p { margin:0; max-width:none; font:18px/1.65 Georgia,serif; }
 .publication-lines .publication-title { margin:6px 0; font-size:20px; }
@@ -290,7 +289,7 @@ footer .eyebrow span { background:var(--acid); }
   .map-heading .eyebrow { font-size:16px; }
   .activity-list article { grid-template-columns:110px 410px minmax(0,1fr); gap:20px; }
   .activity-list article.has-funding { grid-template-columns:110px 200px minmax(0,1fr) 110px; gap:20px; }
-  .featured-list li { grid-template-columns:36px 64px minmax(0,1fr) 150px; gap:18px; }
+  .featured-list li { grid-template-columns:64px minmax(0,1fr) 150px; gap:18px; }
   .publication-record { grid-template-columns:34px minmax(0,1fr) 160px; gap:18px; }
 }
 @media(max-width:900px) {
@@ -302,8 +301,8 @@ footer .eyebrow span { background:var(--acid); }
   .timeline-row { grid-template-columns:260px minmax(0,1fr); gap:26px; }
   .activity-list article,.activity-list article.has-funding { grid-template-columns:100px minmax(0,1fr); gap:12px 22px; }
   .activity-list p,.project-funding { grid-column:2; text-align:left; }
-  .featured-list li { grid-template-columns:36px 64px minmax(0,1fr); }
-  .featured-list .publication-highlights { grid-column:3; }
+  .featured-list li { grid-template-columns:64px minmax(0,1fr); }
+  .featured-list .publication-highlights { grid-column:2; }
   .publication-record { grid-template-columns:34px minmax(0,1fr); }
   .publication-actions { grid-column:2; }
   .publication-highlights { flex-direction:row; flex-wrap:wrap; gap:10px 18px; }
@@ -316,10 +315,10 @@ footer .eyebrow span { background:var(--acid); }
   .map-heading { height:56px; }
   .visitor-heading { flex-direction:row; align-items:center; }
   .map-detail { width:100%; margin-top:16px; }
-  .featured-list li { grid-template-columns:30px minmax(0,1fr); }
-  .featured-list>li>small { grid-column:2; grid-row:1; }
-  .featured-list .publication-lines { grid-column:2; }
-  .featured-list .publication-highlights { grid-column:2; }
+  .featured-list li { grid-template-columns:minmax(0,1fr); }
+  .featured-list>li>small { grid-column:1; grid-row:auto; }
+  .featured-list .publication-lines { grid-column:1; }
+  .featured-list .publication-highlights { grid-column:1; }
   .publication-lines p { font-size:17px; }
   .publication-lines .publication-title { font-size:19px; }
   .timeline-row { grid-template-columns:1fr; gap:14px; }
