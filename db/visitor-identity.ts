@@ -1,6 +1,12 @@
 const identityKey = 'zb-visitor-id';
 const validId = (value: unknown): value is string => typeof value === 'string' && /^[a-zA-Z0-9-]{16,80}$/.test(value);
 
+function newVisitorId() {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  // Secure random IDs also work in older mobile engines, without fingerprinting.
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
 function existingId() {
   try { const id = localStorage.getItem(identityKey); if (validId(id)) return id; } catch {}
   try { const id = document.cookie.split('; ').find(part => part.startsWith(`${identityKey}=`))?.slice(identityKey.length + 1); if (validId(id)) return id; } catch {}
@@ -48,7 +54,7 @@ function indexedId(candidate: string): Promise<string | null> {
 
 export async function visitorIdentity(): Promise<string | null> {
   const resolve = async () => {
-    const candidate = existingId() ?? crypto.randomUUID();
+    const candidate = existingId() ?? newVisitorId();
     const indexed = await indexedId(candidate);
     const selected = indexed ?? candidate;
     const persistent = persistId(selected);
@@ -56,8 +62,12 @@ export async function visitorIdentity(): Promise<string | null> {
     return indexed || persistent ? selected : null;
   };
   if (navigator.locks?.request) {
-    try { return await navigator.locks.request('zb-visitor-identity', { signal: AbortSignal.timeout(6000) }, resolve); }
-    catch { return null; }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    try { return await navigator.locks.request('zb-visitor-identity', { signal: controller.signal }, resolve); }
+    // IndexedDB still serializes first visits if the optional lock API fails.
+    catch { return resolve(); }
+    finally { clearTimeout(timer); }
   }
   return resolve();
 }

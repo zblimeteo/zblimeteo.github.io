@@ -1,3 +1,5 @@
+import { checkVisitorAbort, visitorRequest } from './visitor-request.ts';
+
 export function validCountry(value: unknown): string {
   if (typeof value !== 'string') return '';
   const code = value.trim().toUpperCase();
@@ -31,13 +33,12 @@ export function knownAutomation(userAgent: string, webdriver = false) {
 
 export async function readBrowserCountry(endpoint: string, signal: AbortSignal, fetcher: typeof fetch = fetch) {
   for (let attempt = 0; attempt < 2; attempt++) {
-    signal.throwIfAborted();
+    checkVisitorAbort(signal);
     try {
-      const response = await fetcher(endpoint, { credentials: 'omit', cache: 'no-store', signal: AbortSignal.any([signal, AbortSignal.timeout(6000)]) });
-      if (response.ok) {
-        const country = traceCountry(await response.text());
-        if (country) return country;
-      }
+      const country = await visitorRequest(endpoint, signal, 6000,
+        async response => response.ok ? traceCountry(await response.text()) : '',
+        fetcher, { credentials: 'omit', cache: 'no-store' });
+      if (country) return country;
     } catch (error) { if (signal.aborted) throw error; }
   }
   return '';

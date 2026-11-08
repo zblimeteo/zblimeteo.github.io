@@ -8,6 +8,7 @@ import type { VisitorLocation, VisitorSnapshot } from '../db/visitor-stats';
 import { readBrowserCountry, knownAutomation } from '../db/visitor-geolocation';
 import { readVisitorSnapshot, validSavedSnapshot, type SavedVisitorSnapshot } from '../db/visitor-client';
 import { visitorIdentity } from '../db/visitor-identity';
+import { visitorRequest } from '../db/visitor-request';
 import MapFrame from './map-frame';
 import type * as GeoJSON from 'geojson';
 
@@ -110,8 +111,9 @@ export default function VisitorStats() {
     }
     try { showSaved(JSON.parse(storageGet('zb-visitor-snapshot') ?? 'null')); } catch { /* Ignore invalid browser cache. */ }
     // A dated, real aggregate keeps the map useful if the cross-origin backend is unreachable.
-    void fetch('/visitor-snapshot.json', { cache: 'no-cache', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]) })
-      .then(response => response.ok ? response.json() : null).then(showSaved).catch(() => {});
+    void visitorRequest('/visitor-snapshot.json', controller.signal, 8000,
+      response => response.ok ? response.json() : Promise.resolve(null), fetch, { cache: 'no-cache' })
+      .then(showSaved).catch(() => {});
     function register() {
       if (excluded || cancelled) return Promise.resolve();
       if (registering) return registering;

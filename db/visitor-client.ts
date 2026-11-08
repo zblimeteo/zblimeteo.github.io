@@ -1,4 +1,5 @@
 import type { VisitorSnapshot } from './visitor-stats';
+import { checkVisitorAbort, visitorRequest } from './visitor-request.ts';
 
 export type SavedVisitorSnapshot = { capturedAt: string; snapshot: VisitorSnapshot };
 
@@ -18,13 +19,14 @@ export function validSavedSnapshot(value: unknown): value is SavedVisitorSnapsho
 
 export async function readVisitorSnapshot(endpoint: string, signal: AbortSignal, fetcher: typeof fetch = fetch, pause = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms)), request: RequestInit = {}) {
   for (let attempt = 0; attempt < 3; attempt++) {
-    signal.throwIfAborted();
+    checkVisitorAbort(signal);
     try {
-      const response = await fetcher(endpoint, { ...request, mode: 'cors', credentials: 'omit', cache: 'no-store', signal: AbortSignal.any([signal, AbortSignal.timeout(20000)]) });
-      if (!response.ok) throw new Error('Visitor statistics unavailable');
-      const snapshot: unknown = await response.json();
-      if (!validSnapshot(snapshot)) throw new Error('Invalid visitor statistics');
-      return snapshot;
+      return await visitorRequest(endpoint, signal, 20000, async response => {
+        if (!response.ok) throw new Error('Visitor statistics unavailable');
+        const snapshot: unknown = await response.json();
+        if (!validSnapshot(snapshot)) throw new Error('Invalid visitor statistics');
+        return snapshot;
+      }, fetcher, { ...request, mode: 'cors', credentials: 'omit', cache: 'no-store' });
     } catch (error) {
       if (signal.aborted || attempt === 2) throw error;
       await pause(1000 * (attempt + 1));
