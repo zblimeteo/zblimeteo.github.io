@@ -6,6 +6,10 @@
     "altmetric": 90,
     "links": [
       {
+        "label": "Dataset",
+        "url": "https://doi.org/10.5281/zenodo.24207510"
+      },
+      {
         "label": "AAAS EurekAlert",
         "url": "https://www.eurekalert.org/news-releases/1130536"
       },
@@ -16,7 +20,7 @@
     ],
     "authors": "Zhi-Bo Li, Céline Heuzé*, Jia-Ning Song, Alex Crawford, Hui-Wen Lai, Deliang Chen*",
     "title": "All-season analysis of extratropical and Arctic cyclones over the Northern Hemisphere oceans during 1940–2024",
-    "journal": "Journal of Geophysical Research: Atmosphere",
+    "journal": "Journal of Geophysical Research: Atmospheres",
     "details": "131(6), e2025JD044894.",
     "annotations": [],
     "firstAuthor": true,

@@ -70,7 +70,7 @@ export default function Home() {
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="Zhi-Bo Li, home">ZB<span>·</span>L</a>
         <nav aria-label="Main navigation">
-          <a href="/" aria-current="page">Home</a><a href="/publications.html">Publications</a><a href="/presentations.html">Presentations</a>
+          <a href="/" aria-current="page">Home</a><a href="/publications.html">Publications</a><a href="/presentations.html">Presentations</a><a href="/datasets.html">Datasets</a>
         </nav>
         <a className="contact-link" href="mailto:zhi-bo.li@geo.uu.se">Let&apos;s talk ↗</a>
       </header>

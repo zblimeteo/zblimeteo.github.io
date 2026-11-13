@@ -375,6 +375,13 @@ footer .eyebrow span { background:var(--acid); }
 .presentation-table td:first-child { color:var(--blue); font-weight:700; white-space:nowrap; }
 .presentation-table td:nth-child(2) { font-weight:700; }
 .presentation-table th:last-child,.presentation-table td:last-child { padding-right:0; }
+.datasets-page { min-height:100vh; display:flex; flex-direction:column; }
+.datasets-content { flex:1; width:100%; max-width:1200px; margin:0 auto; padding:clamp(32px,6vw,80px) clamp(24px,5vw,76px); }
+.dataset-record { margin-top:28px; padding-top:24px; border-top:1px solid var(--line); }
+.dataset-record h2 { font:400 clamp(24px,4vw,36px)/1.2 Georgia,serif; margin:0 0 16px; }
+.dataset-record p { max-width:76ch; font:17px/1.65 Arial,sans-serif; }
+.dataset-record .dataset-details { color:var(--blue); font-size:14px; font-weight:700; }
+.dataset-record .publication-highlights { flex-direction:row; flex-wrap:wrap; gap:12px 24px; margin-top:22px; }
 @media(min-width:1800px) {
   .map-columns { padding-left:max(76px,calc((100vw - 1760px)/2)); padding-right:max(76px,calc((100vw - 1760px)/2)); }
   .network-map-wrap,.visitor-layout { grid-template-columns:minmax(0,1fr) 185px; }
@@ -410,7 +417,7 @@ footer .eyebrow span { background:var(--acid); }
 @media(max-width:560px) {
   .site-header { grid-template-columns:1fr; gap:18px; }
   .site-header .wordmark { justify-self:center; }
-  .site-header nav { font-size:18px; gap:24px; justify-content:center; }
+  .site-header nav { font-size:clamp(14px,4vw,18px); gap:10px clamp(12px,4vw,24px); justify-content:center; flex-wrap:wrap; }
   .section-title,.activity-section h3 { font-size:34px; }
   .network-map-wrap,.visitor-layout { grid-template-columns:1fr; gap:16px; }
   .map-detail { margin:0; }

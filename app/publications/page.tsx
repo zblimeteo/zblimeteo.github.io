@@ -27,7 +27,7 @@ export default function PublicationsPage() {
     <main className="publications-page">
       <header className="site-header publications-header">
         <a className="wordmark" href="/" aria-label="Zhi-Bo Li, home">ZB<span>·</span>L</a>
-        <nav aria-label="Main navigation"><a href="/">Home</a><a href="/publications.html" aria-current="page">Publications</a><a href="/presentations.html">Presentations</a></nav>
+        <nav aria-label="Main navigation"><a href="/">Home</a><a href="/publications.html" aria-current="page">Publications</a><a href="/presentations.html">Presentations</a><a href="/datasets.html">Datasets</a></nav>
         <a className="contact-link" href="mailto:zhi-bo.li@geo.uu.se">Let&apos;s talk ↗</a>
       </header>
 
